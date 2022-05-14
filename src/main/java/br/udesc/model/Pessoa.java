@@ -1,13 +1,6 @@
 package br.udesc.model;
 
-import java.awt.Image;
-
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 
 @Entity
@@ -67,7 +60,6 @@ public class Pessoa extends PanacheEntity{
     @Override
     public String toString() {
         return "Pessoa{" +
-                //"id=" + id +
                 ", nome='" + nome + '\'' +
                 ", usuario='" + usuario + '\'' +
                 ", email='" + email + '\'' +
