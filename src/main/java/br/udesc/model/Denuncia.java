@@ -2,37 +2,47 @@ package br.udesc.model;
 
 import java.awt.Image;
 
-public class Denuncia {
+import javax.persistence.Access;
+import javax.persistence.AccessType;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 
-    private int id;
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
+
+@Entity
+public class Denuncia extends PanacheEntity{
+
+    @OneToOne(cascade = CascadeType.ALL)
     private Local local;
+
     private String problema;
     private String sugestao;
+
+    @Access(AccessType.PROPERTY)
+    @ManyToOne(targetEntity = Usuario.class)
     private Usuario usuario;
-    private Image foto;
+    
+    //private Image foto;
+
+    @OneToOne(cascade = CascadeType.ALL)
     private Status statusAtual;
+
+    @OneToOne(cascade = CascadeType.ALL)
     private Historico historico;
 
     public Denuncia() {
     }
 
-    public Denuncia(int id, Local local, String problema, String sugestao, Usuario usuario, Image foto, Status statusAtual, Historico historico) {
-        this.id = id;
+    public Denuncia(Local local, String problema, String sugestao, Usuario usuario, /*Image foto,*/ Status statusAtual, Historico historico) {
         this.local = local;
         this.problema = problema;
         this.sugestao = sugestao;
         this.usuario = usuario;
-        this.foto = foto;
+        //this.foto = foto;
         this.statusAtual = statusAtual;
         this.historico = historico;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public Local getLocal() {
@@ -67,6 +77,7 @@ public class Denuncia {
         this.usuario = usuario;
     }
 
+    /*
     public Image getFoto() {
         return foto;
     }
@@ -74,7 +85,7 @@ public class Denuncia {
     public void setFoto(Image foto) {
         this.foto = foto;
     }
-
+    */
     public Status getStatusAtual() {
         return statusAtual;
     }
@@ -94,12 +105,11 @@ public class Denuncia {
     @Override
     public String toString() {
         return "Denuncia{" +
-                "id=" + id +
                 ", local=" + local +
                 ", problema='" + problema + '\'' +
                 ", sugestao='" + sugestao + '\'' +
                 ", usuario=" + usuario +
-                ", foto=" + foto +
+                //", foto=" + foto +
                 ", statusAtual=" + statusAtual +
                 ", historico=" + historico +
                 '}';

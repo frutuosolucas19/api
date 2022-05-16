@@ -2,8 +2,16 @@ package br.udesc.model;
 
 import java.util.Date;
 
-public class StatusHistoricoDenuncia {
-    private int id;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.OneToOne;
+
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
+
+@Entity
+public class StatusHistoricoDenuncia extends PanacheEntity{
+    
+    @OneToOne(cascade = CascadeType.ALL)
     private Status status;
     private Date horario;
     private Date data;
@@ -11,19 +19,10 @@ public class StatusHistoricoDenuncia {
     public StatusHistoricoDenuncia() {
     }
 
-    public StatusHistoricoDenuncia(int id, Status status, Date horario, Date data) {
-        this.id = id;
+    public StatusHistoricoDenuncia(Status status, Date horario, Date data) { 
         this.status = status;
         this.horario = horario;
         this.data = data;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public Status getStatus() {
@@ -53,7 +52,6 @@ public class StatusHistoricoDenuncia {
     @Override
     public String toString() {
         return "StatusHistoricoDenuncia{" +
-                "id=" + id +
                 ", status=" + status +
                 ", horario=" + horario +
                 ", data=" + data +

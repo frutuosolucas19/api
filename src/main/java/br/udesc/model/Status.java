@@ -1,26 +1,21 @@
 package br.udesc.model;
 
-public class Status {
-    
-    private int id;
+import javax.persistence.Entity;
+
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
+
+@Entity
+public class Status extends PanacheEntity {
+   
     private String nome;
 
     public Status() {
     }
 
-    public Status(int id, String nome) {
-        this.id = id;
+    public Status(String nome) {
         this.nome = nome;
     }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
+    
     public String getNome() {
         return nome;
     }
@@ -32,7 +27,6 @@ public class Status {
     @Override
     public String toString() {
         return "Status{" +
-                "id=" + id +
                 ", nome='" + nome + '\'' +
                 '}';
     }

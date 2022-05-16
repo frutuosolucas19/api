@@ -2,27 +2,29 @@ package br.udesc.model;
 
 import java.util.List;
 
-public class Historico {
+import javax.persistence.Access;
+import javax.persistence.AccessType;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.OneToMany;
+
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
+
+@Entity
+public class Historico extends PanacheEntity {
     
-    private int id;
+    @Access(AccessType.PROPERTY)
+    @OneToMany(targetEntity = StatusHistoricoDenuncia.class)
     private List<StatusHistoricoDenuncia> status;
 
     public Historico() {
     }
 
-    public Historico(int id, List<StatusHistoricoDenuncia> status) {
-        this.id = id;
+    public Historico(List<StatusHistoricoDenuncia> status) {
         this.status = status;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
+    @ElementCollection
     public List<StatusHistoricoDenuncia> getStatus() {
         return status;
     }

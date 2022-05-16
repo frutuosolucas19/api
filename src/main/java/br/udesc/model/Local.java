@@ -1,28 +1,29 @@
 package br.udesc.model;
 
-public class Local {
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.OneToOne;
+
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
+
+@Entity
+public class Local extends PanacheEntity{
     
-    private int id;
     private String nome;
+
+    @OneToOne(cascade = CascadeType.ALL)
     private Localizacao localizacao;
+    
+    @OneToOne(cascade = CascadeType.ALL)
     private Endereco endereco;
 
     public Local() {
     }
 
-    public Local(int id, String nome, Localizacao localizacao, Endereco endereco) {
-        this.id = id;
+    public Local(String nome, Localizacao localizacao, Endereco endereco) {
         this.nome = nome;
         this.localizacao = localizacao;
         this.endereco = endereco;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public String getNome() {

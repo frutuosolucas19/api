@@ -1,26 +1,21 @@
 package br.udesc.model;
 
-public class Localizacao {
+import javax.persistence.Entity;
+
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
+
+@Entity
+public class Localizacao extends PanacheEntity {
     
-    private int id;
     private String latitude;
     private String longitude;
 
     public Localizacao() {
     }
 
-    public Localizacao(int id, String latitude, String longitude) {
-        this.id = id;
+    public Localizacao(String latitude, String longitude) {
         this.latitude = latitude;
         this.longitude = longitude;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public String getLatitude() {
@@ -42,7 +37,6 @@ public class Localizacao {
     @Override
     public String toString() {
         return "Localizacao{" +
-                "id=" + id +
                 ", latitude='" + latitude + '\'' +
                 ", longitude='" + longitude + '\'' +
                 '}';

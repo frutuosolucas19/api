@@ -1,8 +1,12 @@
 package br.udesc.model;
 
-public class Endereco {
+import javax.persistence.Entity;
+
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
+
+@Entity
+public class Endereco extends PanacheEntity {
     
-    private int id;
     private String cep;
     private String logradouro;
     private int numero;
@@ -14,8 +18,7 @@ public class Endereco {
     public Endereco() {
     }
 
-    public Endereco(int id, String cep, String logradouro, int numero, String complemento, String bairro, String localidade, String uf) {
-        this.id = id;
+    public Endereco(String cep, String logradouro, int numero, String complemento, String bairro, String localidade, String uf) {
         this.cep = cep;
         this.logradouro = logradouro;
         this.numero = numero;
@@ -23,14 +26,6 @@ public class Endereco {
         this.bairro = bairro;
         this.localidade = localidade;
         this.uf = uf;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public String getCep() {
@@ -92,7 +87,6 @@ public class Endereco {
     @Override
     public String toString() {
         return "Endereco{" +
-                "id=" + id +
                 ", cep='" + cep + '\'' +
                 ", logradouro='" + logradouro + '\'' +
                 ", numero=" + numero +
