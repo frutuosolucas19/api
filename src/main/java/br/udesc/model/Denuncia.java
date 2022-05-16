@@ -24,7 +24,7 @@ public class Denuncia extends PanacheEntity{
     @ManyToOne(targetEntity = Usuario.class)
     private Usuario usuario;
     
-    //private Image foto;
+    private byte[] imagem;
 
     @OneToOne(cascade = CascadeType.ALL)
     private Status statusAtual;
@@ -35,12 +35,12 @@ public class Denuncia extends PanacheEntity{
     public Denuncia() {
     }
 
-    public Denuncia(Local local, String problema, String sugestao, Usuario usuario, /*Image foto,*/ Status statusAtual, Historico historico) {
+    public Denuncia(Local local, String problema, String sugestao, Usuario usuario, byte[] imagem, Status statusAtual, Historico historico) {
         this.local = local;
         this.problema = problema;
         this.sugestao = sugestao;
         this.usuario = usuario;
-        //this.foto = foto;
+        this.imagem = imagem;
         this.statusAtual = statusAtual;
         this.historico = historico;
     }
@@ -77,15 +77,14 @@ public class Denuncia extends PanacheEntity{
         this.usuario = usuario;
     }
 
-    /*
-    public Image getFoto() {
-        return foto;
+    public byte[] getImagem() {
+    return this.imagem;
+    }
+    
+    public void setImagem(byte[] imagem) { 
+    this.imagem = imagem;
     }
 
-    public void setFoto(Image foto) {
-        this.foto = foto;
-    }
-    */
     public Status getStatusAtual() {
         return statusAtual;
     }
@@ -109,7 +108,7 @@ public class Denuncia extends PanacheEntity{
                 ", problema='" + problema + '\'' +
                 ", sugestao='" + sugestao + '\'' +
                 ", usuario=" + usuario +
-                //", foto=" + foto +
+                ", imagem=" + imagem +
                 ", statusAtual=" + statusAtual +
                 ", historico=" + historico +
                 '}';
