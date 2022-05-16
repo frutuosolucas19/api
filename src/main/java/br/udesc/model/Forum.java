@@ -2,27 +2,33 @@ package br.udesc.model;
 
 import java.util.List;
 
-public class Forum {
+import javax.persistence.Access;
+import javax.persistence.AccessType;
+import javax.persistence.CascadeType;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 
-    private int id;
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
+
+@Entity
+public class Forum extends PanacheEntity {
+
+    @OneToOne(cascade = CascadeType.ALL)
     private Usuario usuario;
+
+    @Access(AccessType.PROPERTY)
+    @OneToMany(targetEntity = Pergunta.class)
     private List<Pergunta> perguntas;
 
     public Forum() {
     }
 
-    public Forum(int id, Usuario usuario, List<Pergunta> perguntas) {
-        this.id = id;
+    public Forum(Usuario usuario, List<Pergunta> perguntas) {
         this.usuario = usuario;
         this.perguntas = perguntas;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public Usuario getUsuario() {
@@ -33,6 +39,7 @@ public class Forum {
         this.usuario = usuario;
     }
 
+    @ElementCollection
     public List<Pergunta> getPerguntas() {
         return perguntas;
     }
@@ -44,7 +51,6 @@ public class Forum {
     @Override
     public String toString() {
         return "Forum{" +
-                "id=" + id +
                 ", usuario=" + usuario +
                 ", perguntas=" + perguntas +
                 '}';

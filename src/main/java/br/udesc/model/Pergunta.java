@@ -2,27 +2,29 @@ package br.udesc.model;
 
 import java.util.List;
 
-public class Pergunta {
+import javax.persistence.Access;
+import javax.persistence.AccessType;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.OneToMany;
+
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
+
+@Entity
+public class Pergunta extends PanacheEntity {
     
-    private int id;
     private String pergunta;
+
+    @Access(AccessType.PROPERTY)
+    @OneToMany(targetEntity = Resposta.class)
     private List<Resposta> respostas;
 
     public Pergunta() {
     }
 
-    public Pergunta(int id, String pergunta, List<Resposta> respostas) {
-        this.id = id;
+    public Pergunta(String pergunta, List<Resposta> respostas) {
         this.pergunta = pergunta;
         this.respostas = respostas;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public String getPergunta() {
@@ -33,6 +35,7 @@ public class Pergunta {
         this.pergunta = pergunta;
     }
 
+    @ElementCollection
     public List<Resposta> getRespostas() {
         return respostas;
     }
@@ -44,7 +47,6 @@ public class Pergunta {
     @Override
     public String toString() {
         return "Pergunta{" +
-                "id=" + id +
                 ", pergunta='" + pergunta + '\'' +
                 ", respostas=" + respostas +
                 '}';

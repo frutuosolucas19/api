@@ -1,24 +1,19 @@
 package br.udesc.model;
 
-public class Resposta {
+import javax.persistence.Entity;
+
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
+
+@Entity
+public class Resposta extends PanacheEntity {
     
-    private int id;
     private String resposta;
 
     public Resposta() {
     }
 
-    public Resposta(int id, String resposta) {
-        this.id = id;
+    public Resposta(String resposta) {
         this.resposta = resposta;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public String getResposta() {
@@ -32,7 +27,6 @@ public class Resposta {
     @Override
     public String toString() {
         return "Resposta{" +
-                "id=" + id +
                 ", resposta='" + resposta + '\'' +
                 '}';
     }

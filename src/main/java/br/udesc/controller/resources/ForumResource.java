@@ -1,4 +1,4 @@
-package br.udesc.controller;
+package br.udesc.controller.resources;
 
 import java.util.List;
 
@@ -15,51 +15,44 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import br.udesc.model.Pessoa;
+import br.udesc.controller.repositories.ForumRepository;
+import br.udesc.model.Forum;
 
-
-@Path("/pessoa")
+@Path("/forum")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public class PessoaResource {
+public class ForumResource {
 
     @Inject
-    PessoaRepository pessoaRepository;
+    ForumRepository forumRepository;
 
     @GET
+    @Path("/foruns")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAll() {
-        List<Pessoa> pessoas = pessoaRepository.listAll();
-        return Response.ok(pessoas).build();
+        List<Forum> foruns = forumRepository.listAll();
+        return Response.ok(foruns).build();
     }
 
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getById(@PathParam("id") Long id) {
-        return pessoaRepository.findByIdOptional(id).
+        return forumRepository.findByIdOptional(id).
                 map(user -> Response.ok(user).build())
                 .orElse(Response.status(404).build());
     }
+
     @POST
     @Transactional
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response create(Pessoa pessoa) {
-        pessoaRepository.persist(pessoa);
-        if (pessoaRepository.isPersistent(pessoa)) {
+    public Response create(Forum forum) {
+        forumRepository.persist(forum);
+        if (forumRepository.isPersistent(forum)) {
             return Response.status(200).build();
         }
         return Response.status(404).build();
-    }
-
-    @DELETE
-    @Path("/{id}")
-    @Transactional
-    public Response deleteById(@PathParam("id") Long id) {
-        boolean deleted = pessoaRepository.deleteById(id);
-        return deleted ? Response.noContent().
-                build() : Response.status(404).build();
     }
 
     @PUT
@@ -67,13 +60,21 @@ public class PessoaResource {
     @Transactional
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response update(@PathParam("id") Long id, Pessoa pessoa) {
-        Pessoa p = pessoaRepository.findById(id);
-        p.setNome(pessoa.getNome());
-        p.setUsuario(pessoa.getUsuario());
-        p.setEmail(pessoa.getEmail());
+    public Response update(@PathParam("id") Long id, Forum forum) {
+        Forum f = forumRepository.findById(id);
+        f.setUsuario(forum.getUsuario());
+        f.setPerguntas(forum.getPerguntas());
         return Response.status(200).build();
 
     }
-   
+
+    @DELETE
+    @Path("/{id}")
+    @Transactional
+    public Response deleteById(@PathParam("id") Long id) {
+        boolean deleted = forumRepository.deleteById(id);
+        return deleted ? Response.noContent().
+                build() : Response.status(404).build();
+    }
+    
 }

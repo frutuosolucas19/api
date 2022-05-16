@@ -1,4 +1,4 @@
-package br.udesc.controller;
+package br.udesc.controller.repositories;
 
 import javax.enterprise.context.ApplicationScoped;
 
