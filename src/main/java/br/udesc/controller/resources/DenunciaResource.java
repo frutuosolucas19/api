@@ -66,7 +66,7 @@ public class DenunciaResource {
         d.setProblema(denuncia.getProblema());
         d.setSugestao(denuncia.getSugestao());
         d.setUsuario(denuncia.getUsuario());
-        //d.setFoto(denuncia.getFoto());
+        d.setImagem(denuncia.getImagem());
         d.setStatusAtual(denuncia.getStatusAtual());
         d.setHistorico(denuncia.getHistorico());
         return Response.status(200).build();

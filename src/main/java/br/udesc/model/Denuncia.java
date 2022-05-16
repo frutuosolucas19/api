@@ -1,7 +1,5 @@
 package br.udesc.model;
 
-import java.awt.Image;
-
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
