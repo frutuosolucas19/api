@@ -2,8 +2,8 @@ package br.udesc.model;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 
@@ -12,28 +12,32 @@ import io.quarkus.hibernate.orm.panache.PanacheEntity;
 @Entity
 public class Denuncia extends PanacheEntity{
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne
+    @JoinColumn(name="local_id")
     private Local local;
 
     private String problema;
     private String sugestao;
 
-    @Access(AccessType.PROPERTY)
-    @ManyToOne(targetEntity = Usuario.class)
+
+    @ManyToOne
+    @JoinColumn(name="usuario_id")
     private Usuario usuario;
     
-    private byte[] imagem;
+    private String imagem;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne
+    @JoinColumn(name="status_id")
     private Status statusAtual;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne
+    @JoinColumn(name="historico_id")
     private Historico historico;
 
     public Denuncia() {
     }
 
-    public Denuncia(Local local, String problema, String sugestao, Usuario usuario, byte[] imagem, Status statusAtual, Historico historico) {
+    public Denuncia(Local local, String problema, String sugestao, Usuario usuario, String imagem, Status statusAtual, Historico historico) {
         this.local = local;
         this.problema = problema;
         this.sugestao = sugestao;
@@ -75,11 +79,11 @@ public class Denuncia extends PanacheEntity{
         this.usuario = usuario;
     }
 
-    public byte[] getImagem() {
+    public String getImagem() {
     return this.imagem;
     }
     
-    public void setImagem(byte[] imagem) { 
+    public void setImagem(String imagem) { 
     this.imagem = imagem;
     }
 

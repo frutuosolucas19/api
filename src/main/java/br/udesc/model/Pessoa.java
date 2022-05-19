@@ -1,8 +1,5 @@
 package br.udesc.model;
 
-import java.awt.Image;
-
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 
@@ -12,12 +9,12 @@ public class Pessoa extends PanacheEntity{
     private String nome;
     private String usuario;
     private String email;
-    private byte[] imagem;
+    private String imagem;
 
     public Pessoa() {
     }
 
-    public Pessoa(String nome, String usuario, String email, byte[] imagem){
+    public Pessoa(String nome, String usuario, String email, String imagem){
         this.nome = nome;
         this.usuario = usuario;
         this.email = email;
@@ -48,12 +45,12 @@ public class Pessoa extends PanacheEntity{
         this.email = email;
     }
 
-    //@Column(name= "imagem")
-    public byte[] getImagem() {
-    return this.imagem;
+    
+    public String getImagem() {
+    return imagem;
     }
 
-    public void setImagem(byte[] imagem) { 
+    public void setImagem(String imagem) { 
     this.imagem = imagem;
     }
 

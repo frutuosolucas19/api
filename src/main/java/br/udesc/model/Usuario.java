@@ -1,7 +1,7 @@
 package br.udesc.model;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
@@ -9,11 +9,14 @@ import io.quarkus.hibernate.orm.panache.PanacheEntity;
 @Entity
 public class Usuario extends PanacheEntity{
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne
+    @JoinColumn(name="pessoa_id")
     private Pessoa pessoa;
+    
     private String tipoUsuario;
     private String login;
     private String senha;
+    
 
     public Usuario() {
     }

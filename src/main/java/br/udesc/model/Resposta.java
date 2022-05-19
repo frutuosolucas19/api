@@ -1,6 +1,8 @@
 package br.udesc.model;
 
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 
@@ -8,6 +10,10 @@ import io.quarkus.hibernate.orm.panache.PanacheEntity;
 public class Resposta extends PanacheEntity {
     
     private String resposta;
+
+    @ManyToOne
+    @JoinColumn(name="pergunta_id")
+    private Pergunta pergunta;
 
     public Resposta() {
     }
@@ -27,7 +33,7 @@ public class Resposta extends PanacheEntity {
     @Override
     public String toString() {
         return "Resposta{" +
-                ", resposta='" + resposta + '\'' +
+                ", resposta='" + resposta + 
                 '}';
     }
 }

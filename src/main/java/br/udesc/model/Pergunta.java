@@ -1,11 +1,16 @@
 package br.udesc.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
+import javax.persistence.CascadeType;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
@@ -15,10 +20,14 @@ public class Pergunta extends PanacheEntity {
     
     private String pergunta;
 
-    @Access(AccessType.PROPERTY)
-    @OneToMany(targetEntity = Resposta.class)
-    private List<Resposta> respostas;
-
+    @ManyToOne
+    @JoinColumn(name="forum_id")
+    private Forum forum;
+    
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name="pergunta_id")
+    private List<Resposta> respostas = new ArrayList<>();
+   
     public Pergunta() {
     }
 
@@ -42,8 +51,8 @@ public class Pergunta extends PanacheEntity {
 
     public void setRespostas(List<Resposta> respostas) {
         this.respostas = respostas;
-    }
-
+    } 
+    
     @Override
     public String toString() {
         return "Pergunta{" +
