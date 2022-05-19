@@ -3,8 +3,7 @@ package br.udesc.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
+import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.CascadeType;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
@@ -31,9 +30,18 @@ public class Pergunta extends PanacheEntity {
     public Pergunta() {
     }
 
-    public Pergunta(String pergunta, List<Resposta> respostas) {
+    public Pergunta(Forum forum, String pergunta, List<Resposta> respostas) {
+        this.forum=forum;
         this.pergunta = pergunta;
         this.respostas = respostas;
+    }
+
+    public Forum getForum() {
+        return forum;
+    }
+
+    public void setForum(Forum forum) {
+        this.forum = forum;
     }
 
     public String getPergunta() {
@@ -56,6 +64,7 @@ public class Pergunta extends PanacheEntity {
     @Override
     public String toString() {
         return "Pergunta{" +
+                ", forum='" + forum + '\'' +
                 ", pergunta='" + pergunta + '\'' +
                 ", respostas=" + respostas +
                 '}';

@@ -2,8 +2,6 @@ package br.udesc.model;
 
 import java.util.List;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;

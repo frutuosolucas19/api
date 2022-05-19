@@ -18,8 +18,16 @@ public class Resposta extends PanacheEntity {
     public Resposta() {
     }
 
-    public Resposta(String resposta) {
+    public Resposta(Pergunta pergunta, String resposta) {
         this.resposta = resposta;
+    }
+
+    public Pergunta getPergunta() {
+        return pergunta;
+    }
+
+    public void setPergunta(Pergunta pergunta) {
+        this.pergunta = pergunta;
     }
 
     public String getResposta() {
@@ -33,6 +41,7 @@ public class Resposta extends PanacheEntity {
     @Override
     public String toString() {
         return "Resposta{" +
+                ", pergunta='" + pergunta + '\'' +
                 ", resposta='" + resposta + 
                 '}';
     }

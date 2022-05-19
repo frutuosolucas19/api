@@ -62,7 +62,7 @@ public class HistoricoResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response update(@PathParam("id") Long id, Historico historico) {
         Historico h = historicoRepository.findById(id);
-        h.setStatus(h.getStatus());
+        h.setStatusHistoricoDenuncias(h.getstatusHistoricoDenuncias());
         return Response.status(200).build();
 
     }

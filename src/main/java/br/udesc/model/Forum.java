@@ -3,8 +3,6 @@ package br.udesc.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
@@ -42,7 +40,6 @@ public class Forum extends PanacheEntity {
     public void setUsuario(Usuario usuario) {
         this.usuario = usuario;
     }
-
     
     @ElementCollection
     public List<Pergunta> getPerguntas() {

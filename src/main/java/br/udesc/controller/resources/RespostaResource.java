@@ -62,6 +62,7 @@ public class RespostaResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response update(@PathParam("id") Long id, Resposta resposta) {
         Resposta r = respostaRepository.findById(id);
+        r.setPergunta(resposta.getPergunta());
         r.setResposta(resposta.getResposta());
         return Response.status(200).build();
 
