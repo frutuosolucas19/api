@@ -64,7 +64,6 @@ public class PerguntaResource {
         Pergunta p = perguntaRepository.findById(id);
         p.setForum(pergunta.getForum());
         p.setPergunta(pergunta.getPergunta());
-        p.setRespostas(pergunta.getRespostas());
         return Response.status(200).build();
 
     }

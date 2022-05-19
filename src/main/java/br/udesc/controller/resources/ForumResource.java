@@ -63,7 +63,6 @@ public class ForumResource {
     public Response update(@PathParam("id") Long id, Forum forum) {
         Forum f = forumRepository.findById(id);
         f.setUsuario(forum.getUsuario());
-        f.setPerguntas(forum.getPerguntas());
         return Response.status(200).build();
 
     }
