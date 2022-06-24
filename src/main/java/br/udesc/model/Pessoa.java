@@ -14,11 +14,12 @@ public class Pessoa extends PanacheEntity{
     public Pessoa() {
     }
 
-    public Pessoa(String nome, String usuario, String email, String imagem){
+    public Pessoa(String nome, String usuario, String email, String imagem
+    ){
         this.nome = nome;
         this.usuario = usuario;
         this.email = email;
-        this.imagem = imagem;
+       this.imagem = imagem;
     }
 
     public String getNome() {

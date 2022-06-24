@@ -25,10 +25,11 @@ public class StatusHistoricoDenuncia extends PanacheEntity{
     public StatusHistoricoDenuncia() {
     }
 
-    public StatusHistoricoDenuncia(Status status, Date horario, Date data) { 
+    public StatusHistoricoDenuncia(Status status, Date horario, Date data,  Historico historico) { 
         this.status = status;
         this.horario = horario;
         this.data = data;
+        this.historico=historico;
     }
 
     public Status getStatus() {
