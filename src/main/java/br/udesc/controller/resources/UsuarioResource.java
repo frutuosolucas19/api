@@ -17,6 +17,7 @@ import javax.ws.rs.core.Response;
 
 import br.udesc.controller.repositories.UsuarioRepository;
 import br.udesc.model.Usuario;
+import io.vertx.ext.auth.authentication.Credentials;
 
 @Path("/usuario")
 @Produces(MediaType.APPLICATION_JSON)
@@ -77,6 +78,22 @@ public class UsuarioResource {
         boolean deleted = usuarioRepository.deleteById(id);
         return deleted ? Response.noContent().
                 build() : Response.status(404).build();
+    }
+
+    @POST
+    @Path("/login")
+    @Transactional
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response login(Usuario usuario) {
+        Usuario new_usuario = usuarioRepository.findByUsernameAndPassword(
+                usuario.getLogin(), usuario.getSenha());
+
+        if (new_usuario != null) {
+            return Response.ok().build();
+        } else {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
     }
     
 }
