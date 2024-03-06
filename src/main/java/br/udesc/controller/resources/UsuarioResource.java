@@ -14,8 +14,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.persistence.EntityManager;
 
 import br.udesc.controller.repositories.UsuarioRepository;
+import br.udesc.dto.UsuarioResponse;
 import br.udesc.model.Usuario;
 import io.vertx.ext.auth.authentication.Credentials;
 
@@ -33,6 +35,19 @@ public class UsuarioResource {
     public Response getAll() {
         List<Usuario> usuarios = usuarioRepository.listAll();
         return Response.ok(usuarios).build();
+    }
+
+    @GET
+    @Path("/{login}/{senha}")
+    public Response verificarCredenciais(@PathParam("login") String login, @PathParam("senha") String senha) {
+        Usuario usuario = Usuario.find("login = ?1 and senha = ?2", login, senha).firstResult();
+        if (usuario != null) {
+            UsuarioResponse usuarioResponse = new UsuarioResponse();
+            return Response.ok(usuarioResponse.fromEntity(usuario)).build();
+        } else {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("Usuário não encontrado para as credenciais fornecidas.").build();
+        }
     }
 
     @GET
@@ -79,21 +94,4 @@ public class UsuarioResource {
         return deleted ? Response.noContent().
                 build() : Response.status(404).build();
     }
-
-    @POST
-    @Path("/login")
-    @Transactional
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response login(Usuario usuario) {
-        Usuario new_usuario = usuarioRepository.findByUsernameAndPassword(
-                usuario.getLogin(), usuario.getSenha());
-
-        if (new_usuario != null) {
-            return Response.ok().build();
-        } else {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
-    }
-    
 }
