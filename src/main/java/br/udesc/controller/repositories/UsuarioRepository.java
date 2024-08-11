@@ -9,7 +9,6 @@ import io.quarkus.hibernate.orm.panache.PanacheRepository;
 @ApplicationScoped
 public class UsuarioRepository implements PanacheRepository<Usuario> {
 
-    @Transactional
     public Usuario verificarCredenciais(String login, String senha) {
         return Usuario.find("login = ?1 and senha = ?2", login, senha).firstResult();
     }

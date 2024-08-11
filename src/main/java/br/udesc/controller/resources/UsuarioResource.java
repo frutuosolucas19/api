@@ -14,12 +14,9 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.persistence.EntityManager;
-
 import br.udesc.controller.repositories.UsuarioRepository;
 import br.udesc.dto.UsuarioResponse;
 import br.udesc.model.Usuario;
-import io.vertx.ext.auth.authentication.Credentials;
 
 @Path("/usuario")
 @Produces(MediaType.APPLICATION_JSON)
@@ -29,6 +26,7 @@ public class UsuarioResource {
     @Inject
     UsuarioRepository usuarioRepository;
 
+    //funciona
     @GET
     @Path("/usuarios")
     @Produces(MediaType.APPLICATION_JSON)
@@ -37,28 +35,7 @@ public class UsuarioResource {
         return Response.ok(usuarios).build();
     }
 
-    @GET
-    @Path("/{login}/{senha}")
-    public Response verificarCredenciais(@PathParam("login") String login, @PathParam("senha") String senha) {
-        Usuario usuario = Usuario.find("login = ?1 and senha = ?2", login, senha).firstResult();
-        if (usuario != null) {
-            UsuarioResponse usuarioResponse = new UsuarioResponse();
-            return Response.ok(usuarioResponse.fromEntity(usuario)).build();
-        } else {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity("Usuário não encontrado para as credenciais fornecidas.").build();
-        }
-    }
-
-    @GET
-    @Path("/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getById(@PathParam("id") Long id) {
-        return usuarioRepository.findByIdOptional(id).
-                map(user -> Response.ok(user).build())
-                .orElse(Response.status(404).build());
-    }
-
+    //funciona
     @POST
     @Transactional
     @Produces(MediaType.APPLICATION_JSON)
@@ -70,6 +47,30 @@ public class UsuarioResource {
         }
         return Response.status(404).build();
     }
+
+    @GET
+    @Path("/login/{login}/{senha}")
+    public Response login(@PathParam("login") String login, @PathParam("senha") String senha) {
+        
+        Usuario usuario = usuarioRepository.verificarCredenciais(login, senha);
+        
+        if (usuario != null) {
+            return Response.ok(usuario).build();  // Credenciais válidas
+        }
+        
+        return Response.status(401).build();  // Status 401 Unauthorized
+    }
+
+    @GET
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getById(@PathParam("id") Long id) {
+        return usuarioRepository.findByIdOptional(id).
+                map(user -> Response.ok(user).build())
+                .orElse(Response.status(404).build());
+    }
+
+    
 
     @PUT
     @Path("/{id}")
