@@ -48,11 +48,11 @@ public class UsuarioResource {
         return Response.status(404).build();
     }
 
-    @GET
-    @Path("/login/{login}/{senha}")
-    public Response login(@PathParam("login") String login, @PathParam("senha") String senha) {
-        
-        Usuario usuario = usuarioRepository.verificarCredenciais(login, senha);
+        @GET
+        @Path("/{login}/{senha}")
+        public Response login(@PathParam("login") String login, @PathParam("senha") String senha) {
+            
+        Usuario usuario = Usuario.find("login = ?1 and senha = ?2", login, senha).firstResult();
         
         if (usuario != null) {
             return Response.ok(usuario).build();  // Credenciais válidas
@@ -60,7 +60,7 @@ public class UsuarioResource {
         
         return Response.status(401).build();  // Status 401 Unauthorized
     }
-
+    
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -69,8 +69,6 @@ public class UsuarioResource {
                 map(user -> Response.ok(user).build())
                 .orElse(Response.status(404).build());
     }
-
-    
 
     @PUT
     @Path("/{id}")
