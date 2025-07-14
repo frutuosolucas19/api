@@ -14,18 +14,18 @@ public class Usuario extends PanacheEntity{
     @JoinColumn(name="pessoa_id")
     private Pessoa pessoa;
     
-    private String tipoUsuario;
-    private String login;
+    private String tipoUsuario; 
+    private String email;
     private String senha;
     
 
     public Usuario() {
     }
 
-    public Usuario(Pessoa pessoa, String tipoUsuario, String login, String senha) {
+    public Usuario(Pessoa pessoa, String tipoUsuario, String email, String senha) {
         this.pessoa = pessoa;
         this.tipoUsuario = tipoUsuario;
-        this.login = login;
+        this.email = email;
         this.senha = senha;
     }
 
@@ -45,12 +45,12 @@ public class Usuario extends PanacheEntity{
         this.tipoUsuario = tipoUsuario;
     }
 
-    public String getLogin() {
-        return login;
+    public String getEmail() {
+        return email;
     }
 
-    public void setLogin(String login) {
-        this.login = login;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getSenha() {
@@ -66,7 +66,7 @@ public class Usuario extends PanacheEntity{
         return "Usuario{" +
                 "pessoa=" + pessoa +
                 ", tipoUsuario='" + tipoUsuario + '\'' +
-                ", login='" + login + '\'' +
+                ", email='" + email + '\'' +
                 ", senha='" + senha + '\'' +
                 '}';
     }
