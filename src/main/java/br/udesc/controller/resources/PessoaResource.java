@@ -64,8 +64,6 @@ public class PessoaResource {
     public Response update(@PathParam("id") Long id, Pessoa pessoa) {
         Pessoa p = pessoaRepository.findById(id);
         p.setNome(pessoa.getNome());
-        p.setUsuario(pessoa.getUsuario());
-        p.setEmail(pessoa.getEmail());
         p.setImagem(pessoa.getImagem());
         return Response.status(200).build();
 

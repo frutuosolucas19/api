@@ -4,22 +4,17 @@ import javax.persistence.Entity;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 
 @Entity
-public class Pessoa extends PanacheEntity{
+public class Pessoa extends PanacheEntity {
 
     private String nome;
-    private String usuario;
-    private String email;
     private String imagem;
 
     public Pessoa() {
     }
 
-    public Pessoa(String nome, String usuario, String email, String imagem
-    ){
+    public Pessoa(String nome, String imagem) {
         this.nome = nome;
-        this.usuario = usuario;
-        this.email = email;
-       this.imagem = imagem;
+        this.imagem = imagem;
     }
 
     public String getNome() {
@@ -30,38 +25,19 @@ public class Pessoa extends PanacheEntity{
         this.nome = nome;
     }
 
-    public String getUsuario() {
-        return usuario;
-    }
-
-    public void setUsuario(String usuario) {
-        this.usuario = usuario;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    
     public String getImagem() {
-    return imagem;
+        return imagem;
     }
 
-    public void setImagem(String imagem) { 
-    this.imagem = imagem;
+    public void setImagem(String imagem) {
+        this.imagem = imagem;
     }
 
     @Override
     public String toString() {
         return "Pessoa{" +
-                ", nome='" + nome + '\'' +
-                ", usuario='" + usuario + '\'' +
-                ", email='" + email + '\'' +
-                ", imagem=" + imagem +
+                "nome='" + nome + '\'' +
+                ", imagem='" + imagem + '\'' +
                 '}';
     }
 }

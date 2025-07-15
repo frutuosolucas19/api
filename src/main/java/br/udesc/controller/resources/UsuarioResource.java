@@ -44,9 +44,9 @@ public class UsuarioResource {
     public Response create(Usuario usuario) {
         usuarioRepository.persist(usuario);
         if (usuarioRepository.isPersistent(usuario)) {
-            return Response.status(200).build();
+            return Response.status(200).entity(usuario).build(); // retorna o objeto como JSON
         }
-        return Response.status(404).build();
+        return Response.status(400).entity("Erro ao persistir usuário").build();
     }
 
         @GET
@@ -78,8 +78,9 @@ public class UsuarioResource {
 
         String nome = usuario.getPessoa().getNome(); 
         String tipo = usuario.getTipoUsuario();
+        String email = usuario.getEmail();
 
-        return Response.ok(new LoginResponse(nome, tipo)).build();
+        return Response.ok(new LoginResponse(nome, email, tipo)).build();
     }
 
     @GET

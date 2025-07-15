@@ -8,25 +8,24 @@ import javax.persistence.CascadeType;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 
 @Entity
-public class Usuario extends PanacheEntity{
+public class Usuario extends PanacheEntity {
 
     @OneToOne(cascade = CascadeType.PERSIST)
-    @JoinColumn(name="pessoa_id")
+    @JoinColumn(name = "pessoa_id")
     private Pessoa pessoa;
-    
-    private String tipoUsuario; 
+
     private String email;
     private String senha;
-    
+    private String tipoUsuario;
 
     public Usuario() {
     }
 
-    public Usuario(Pessoa pessoa, String tipoUsuario, String email, String senha) {
+    public Usuario(Pessoa pessoa, String email, String senha, String tipoUsuario) {
         this.pessoa = pessoa;
-        this.tipoUsuario = tipoUsuario;
         this.email = email;
         this.senha = senha;
+        this.tipoUsuario = tipoUsuario;
     }
 
     public Pessoa getPessoa() {
@@ -35,14 +34,6 @@ public class Usuario extends PanacheEntity{
 
     public void setPessoa(Pessoa pessoa) {
         this.pessoa = pessoa;
-    }
-
-    public String getTipoUsuario() {
-        return tipoUsuario;
-    }
-
-    public void setTipoUsuario(String tipoUsuario) {
-        this.tipoUsuario = tipoUsuario;
     }
 
     public String getEmail() {
@@ -61,13 +52,20 @@ public class Usuario extends PanacheEntity{
         this.senha = senha;
     }
 
+    public String getTipoUsuario() {
+        return tipoUsuario;
+    }
+
+    public void setTipoUsuario(String tipoUsuario) {
+        this.tipoUsuario = tipoUsuario;
+    }
+
     @Override
     public String toString() {
         return "Usuario{" +
                 "pessoa=" + pessoa +
-                ", tipoUsuario='" + tipoUsuario + '\'' +
                 ", email='" + email + '\'' +
-                ", senha='" + senha + '\'' +
+                ", tipoUsuario='" + tipoUsuario + '\'' +
                 '}';
     }
 }
