@@ -10,4 +10,8 @@ public class UsuarioRepository implements PanacheRepository<Usuario> {
     public Usuario findByEmailAndSenha(String email, String senha) {
         return find("email = ?1 and senha = ?2", email, senha).firstResult();
     }
+
+    public Usuario findByEmail(String email) {
+        return find("email", email).firstResult();
+    }
 }

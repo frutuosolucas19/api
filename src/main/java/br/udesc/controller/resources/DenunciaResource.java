@@ -16,7 +16,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import br.udesc.controller.repositories.DenunciaRepository;
+import br.udesc.controller.repositories.UsuarioRepository;
+import br.udesc.dto.DenunciaRequest;
 import br.udesc.model.Denuncia;
+import br.udesc.model.Usuario;
 
 @Path("/denuncia")
 @Produces(MediaType.APPLICATION_JSON)
@@ -25,6 +28,9 @@ public class DenunciaResource {
     
     @Inject
     DenunciaRepository denunciaRepository;
+
+    @Inject
+    UsuarioRepository usuarioRepository;
 
     @GET
     @Path("/denuncias")
@@ -42,6 +48,32 @@ public class DenunciaResource {
                 map(user -> Response.ok(user).build())
                 .orElse(Response.status(404).build());
     }
+
+
+   @POST
+    @Path("/denuncia")
+    @Transactional
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response criarDenuncia(DenunciaRequest request) {
+        Usuario usuario = usuarioRepository.findByEmail(request.getEmailUsuario());
+        if (usuario == null) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("Usuário não encontrado").build();
+        }
+
+        Denuncia denuncia = new Denuncia();
+        denuncia.setLocal(request.getLocal());
+        denuncia.setProblema(request.getProblema());
+        denuncia.setSugestao(request.getSugestao());
+        denuncia.setImagem(request.getImagem());
+        denuncia.setStatusAtual(request.getStatusAtual());
+        denuncia.setHistorico(request.getHistorico());
+        denuncia.setUsuario(usuario); 
+
+        denunciaRepository.persist(denuncia);
+
+        return Response.status(Response.Status.CREATED).build();
+}
 
     @POST
     @Transactional
