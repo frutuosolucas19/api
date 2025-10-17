@@ -1,5 +1,6 @@
 package br.udesc.model;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
@@ -11,11 +12,11 @@ public class Local extends PanacheEntity{
     
     private String nome;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name="localizacao_id")
     private Localizacao localizacao;
     
-    @OneToOne
+    @OneToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name="endereco_id")
     private Endereco endereco;
 

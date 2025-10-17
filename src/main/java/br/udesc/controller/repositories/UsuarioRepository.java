@@ -4,14 +4,25 @@ import javax.enterprise.context.ApplicationScoped;
 import br.udesc.model.Usuario;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 
+import java.util.Optional;
+
 @ApplicationScoped
 public class UsuarioRepository implements PanacheRepository<Usuario> {
 
-    public Usuario findByEmailAndSenha(String email, String senha) {
-        return find("email = ?1 and senha = ?2", email, senha).firstResult();
+    public Optional<Usuario> findByEmail(String emailLower) {
+        if (emailLower == null) return Optional.empty();
+        return find("email", emailLower).firstResultOptional();
     }
 
-    public Usuario findByEmail(String email) {
-        return find("email", email).firstResult();
+    public Optional<Usuario> findByEmailIgnoreCase(String emailAnyCase) {
+        if (emailAnyCase == null) return Optional.empty();
+        return find("lower(email) = ?1", emailAnyCase.trim().toLowerCase())
+                .firstResultOptional();
     }
+
+    public boolean existsByEmail(String emailLower) {
+        if (emailLower == null) return false;
+        return count("email", emailLower) > 0;
+    }
+
 }

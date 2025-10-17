@@ -1,22 +1,16 @@
 package br.udesc.controller.resources;
-
-import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
 
 import br.udesc.controller.repositories.UsuarioRepository;
+import br.udesc.controller.security.JwtService;
 import br.udesc.dto.LoginRequest;
 import br.udesc.dto.LoginResponse;
+import br.udesc.dto.UsuarioResponse;
 import br.udesc.model.Usuario;
 
 @Path("/usuario")
@@ -24,72 +18,90 @@ import br.udesc.model.Usuario;
 @Consumes(MediaType.APPLICATION_JSON)
 public class UsuarioResource {
 
-    @Inject
-    UsuarioRepository usuarioRepository;
+    @Inject UsuarioRepository usuarioRepository;
+    @Inject JwtService jwtService;
 
-    //funciona
     @GET
     @Path("/usuarios")
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getAll() {
-        List<Usuario> usuarios = usuarioRepository.listAll();
-        return Response.ok(usuarios).build();
+        var lista = usuarioRepository.listAll().stream()
+            .map(u -> new UsuarioResponse(u.id, u.getPessoa(), u.getEmail(), u.getTipoUsuario()))
+            .collect(Collectors.toList());
+
+        return Response.ok(lista).build();
     }
 
-    //funciona
     @POST
     @Transactional
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
     public Response create(Usuario usuario) {
-        usuarioRepository.persist(usuario);
-        if (usuarioRepository.isPersistent(usuario)) {
-            return Response.status(200).entity(usuario).build(); // retorna o objeto como JSON
+        if (usuario == null
+            || usuario.getEmail() == null || usuario.getEmail().isBlank()
+            || usuario.getPessoa() == null
+            || usuario.getTipoUsuario() == null || usuario.getTipoUsuario().isBlank()
+            || usuario.getSenha() == null || usuario.getSenha().isBlank()) {
+            return Response.status(400).entity("Dados obrigatórios ausentes").build();
         }
-        return Response.status(400).entity("Erro ao persistir usuário").build();
-    }
 
-        @GET
-        @Path("/{login}/{senha}")
-        public Response login(@PathParam("login") String login, @PathParam("senha") String senha) {
-            
-        Usuario usuario = Usuario.find("login = ?1 and senha = ?2", login, senha).firstResult();
-        
-        if (usuario != null) {
-            return Response.ok(usuario).build();
+        usuario.setEmail(usuario.getEmail().trim().toLowerCase());
+        if (usuarioRepository.count("email", usuario.getEmail()) > 0) {
+            return Response.status(409).entity("E-mail já cadastrado").build();
         }
-        
-        return Response.status(401).build();
+
+        String hash = at.favre.lib.crypto.bcrypt.BCrypt.withDefaults()
+                .hashToString(12, usuario.getSenha().toCharArray());
+        usuario.setSenhaHash(hash);
+        usuario.setSenha(null); 
+
+        usuarioRepository.persist(usuario);
+
+        var resp = new br.udesc.dto.UsuarioResponse(usuario.id, usuario.getPessoa(),
+                                                    usuario.getEmail(), usuario.getTipoUsuario());
+        return Response.status(Response.Status.CREATED).entity(resp).build();
     }
 
     @POST
     @Path("/login")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
     public Response login(LoginRequest loginRequest) {
-        Usuario usuario = usuarioRepository.findByEmailAndSenha(
-            loginRequest.email, loginRequest.senha
-        );
-
-        if (usuario == null) {
-            return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity("Email ou senha inválidos").build();
+        if (loginRequest == null || loginRequest.email == null || loginRequest.senha == null) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("Email e senha são obrigatórios.").build();
         }
 
-        String nome = usuario.getPessoa().getNome(); 
-        String tipo = usuario.getTipoUsuario();
-        String email = usuario.getEmail();
+        String emailLower = loginRequest.email.trim().toLowerCase();
+        String senhaDigitada = loginRequest.senha;
 
-        return Response.ok(new LoginResponse(nome, email, tipo)).build();
+        var usuarioOpt = usuarioRepository.findByEmail(emailLower);
+        if (usuarioOpt.isEmpty()) {
+            return Response.status(Response.Status.UNAUTHORIZED).entity("Email ou senha inválidos").build();
+        }
+
+        Usuario usuario = usuarioOpt.get();
+
+        boolean ok = at.favre.lib.crypto.bcrypt.BCrypt.verifyer()
+                .verify(senhaDigitada.toCharArray(), usuario.getSenhaHash())
+                .verified;
+
+        if (!ok) {
+            return Response.status(Response.Status.UNAUTHORIZED).entity("Email ou senha inválidos").build();
+        }
+
+        String token = jwtService.gerarToken(usuario.getEmail(), usuario.id);
+
+        LoginResponse resp = new LoginResponse(
+                usuario.getPessoa() != null ? usuario.getPessoa().getNome() : null,
+                usuario.getEmail(),
+                usuario.getTipoUsuario(),
+                token
+        );
+
+        return Response.ok(resp).build();
     }
 
     @GET
     @Path("/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getById(@PathParam("id") Long id) {
-        return usuarioRepository.findByIdOptional(id).
-                map(user -> Response.ok(user).build())
-                .orElse(Response.status(404).build());
+        return usuarioRepository.findByIdOptional(id)
+            .map(u -> Response.ok(new br.udesc.dto.UsuarioResponse(u.id, u.getPessoa(), u.getEmail(), u.getTipoUsuario())).build())
+            .orElse(Response.status(Response.Status.NOT_FOUND).build());
     }
 
     @DELETE
@@ -97,7 +109,6 @@ public class UsuarioResource {
     @Transactional
     public Response deleteById(@PathParam("id") Long id) {
         boolean deleted = usuarioRepository.deleteById(id);
-        return deleted ? Response.noContent().
-                build() : Response.status(404).build();
+        return deleted ? Response.noContent().build() : Response.status(Response.Status.NOT_FOUND).build();
     }
 }

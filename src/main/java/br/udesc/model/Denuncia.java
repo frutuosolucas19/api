@@ -1,5 +1,6 @@
 package br.udesc.model;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -10,7 +11,7 @@ import io.quarkus.hibernate.orm.panache.PanacheEntity;
 @Entity
 public class Denuncia extends PanacheEntity{
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name="local_id")
     private Local local;
 
@@ -18,17 +19,17 @@ public class Denuncia extends PanacheEntity{
     private String sugestao;
 
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name="usuario_id")
     private Usuario usuario;
     
     private String imagem;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name="status_id")
     private Status statusAtual;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name="historico_id")
     private Historico historico;
 
