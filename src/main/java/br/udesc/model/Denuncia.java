@@ -1,117 +1,98 @@
 package br.udesc.model;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
-
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import org.hibernate.annotations.CreationTimestamp;
+
+import javax.persistence.*;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-public class Denuncia extends PanacheEntity{
+@Table(name = "denuncia")
+public class Denuncia extends PanacheEntity {
 
-    @OneToOne(cascade = CascadeType.PERSIST)
-    @JoinColumn(name="local_id")
-    private Local local;
+    @Column(name = "nome_local", nullable = false, length = 200)
+    private String nomeLocal;
 
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "endereco_id", nullable = false)
+    private Endereco endereco;
+
+    @Column(nullable = false, columnDefinition = "text")
     private String problema;
+
+    @Column(columnDefinition = "text")
     private String sugestao;
 
+    @CreationTimestamp
+    @Column(name = "criado_em", updatable = false)
+    private Instant criadoEm;
 
-    @ManyToOne(cascade = CascadeType.PERSIST)
-    @JoinColumn(name="usuario_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
-    
-    private String imagem;
 
-    @OneToOne(cascade = CascadeType.PERSIST)
-    @JoinColumn(name="status_id")
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "status_id")
     private Status statusAtual;
 
-    @OneToOne(cascade = CascadeType.PERSIST)
-    @JoinColumn(name="historico_id")
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "historico_id")
     private Historico historico;
 
-    public Denuncia() {
-    }
+    @OneToMany(
+            mappedBy = "denuncia",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @OrderBy("ordem ASC, id ASC")
+    private List<Imagem> imagens = new ArrayList<>();
 
-    public Denuncia(Local local, String problema, String sugestao, Usuario usuario, String imagem, Status statusAtual, Historico historico) {
-        this.local = local;
+    public Denuncia() {}
+
+    public Denuncia(String nomeLocal, Endereco endereco, String problema, String sugestao) {
+        this.nomeLocal = nomeLocal;
+        this.endereco = endereco;
         this.problema = problema;
         this.sugestao = sugestao;
-        this.usuario = usuario;
-        this.imagem = imagem;
-        this.statusAtual = statusAtual;
-        this.historico = historico;
     }
 
-    public Local getLocal() {
-        return local;
+    public void addImagem(Imagem img) {
+        if (img == null) return;
+        img.setDenuncia(this);
+        this.imagens.add(img);
     }
 
-    public void setLocal(Local local) {
-        this.local = local;
+    public void removeImagem(Imagem img) {
+        if (img == null) return;
+        img.setDenuncia(null);
+        this.imagens.remove(img);
     }
 
-    public String getProblema() {
-        return problema;
-    }
+    public String getNomeLocal() { return nomeLocal; }
+    public void setNomeLocal(String nomeLocal) { this.nomeLocal = nomeLocal; }
 
-    public void setProblema(String problema) {
-        this.problema = problema;
-    }
+    public Endereco getEndereco() { return endereco; }
+    public void setEndereco(Endereco endereco) { this.endereco = endereco; }
 
-    public String getSugestao() {
-        return sugestao;
-    }
+    public String getProblema() { return problema; }
+    public void setProblema(String problema) { this.problema = problema; }
 
-    public void setSugestao(String sugestao) {
-        this.sugestao = sugestao;
-    }
+    public String getSugestao() { return sugestao; }
+    public void setSugestao(String sugestao) { this.sugestao = sugestao; }
 
-    public Usuario getUsuario() {
-        return usuario;
-    }
+    public Instant getCriadoEm() { return criadoEm; }
 
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
-    }
+    public Usuario getUsuario() { return usuario; }
+    public void setUsuario(Usuario usuario) { this.usuario = usuario; }
 
-    public String getImagem() {
-    return this.imagem;
-    }
-    
-    public void setImagem(String imagem) { 
-    this.imagem = imagem;
-    }
+    public Status getStatusAtual() { return statusAtual; }
+    public void setStatusAtual(Status statusAtual) { this.statusAtual = statusAtual; }
 
-    public Status getStatusAtual() {
-        return statusAtual;
-    }
+    public Historico getHistorico() { return historico; }
+    public void setHistorico(Historico historico) { this.historico = historico; }
 
-    public void setStatusAtual(Status statusAtual) {
-        this.statusAtual = statusAtual;
-    }
-
-    public Historico getHistorico() {
-        return historico;
-    }
-
-    public void setHistorico(Historico historico) {
-        this.historico = historico;
-    }
-
-    @Override
-    public String toString() {
-        return "Denuncia{" +
-                ", local=" + local +
-                ", problema='" + problema + '\'' +
-                ", sugestao='" + sugestao + '\'' +
-                ", usuario=" + usuario +
-                ", imagem=" + imagem +
-                ", statusAtual=" + statusAtual +
-                ", historico=" + historico +
-                '}';
-    }
+    public List<Imagem> getImagens() { return imagens; }
+    public void setImagens(List<Imagem> imagens) { this.imagens = imagens; }
 }

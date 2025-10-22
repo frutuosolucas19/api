@@ -67,7 +67,7 @@ public class EnderecoResource {
         e.setNumero(endereco.getNumero());
         e.setComplemento(endereco.getComplemento());
         e.setBairro(endereco.getBairro());
-        e.setLocalidade(endereco.getLocalidade());
+        e.setCidade(endereco.getCidade());
         e.setUf(endereco.getUf());
         return Response.status(200).build();
 
