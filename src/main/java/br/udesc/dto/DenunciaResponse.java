@@ -11,6 +11,7 @@ public class DenunciaResponse {
     public String sugestao;
     public String emailUsuario;
     public Instant criadoEm;
+    public String status;
     public List<ImagemMeta> imagens;
 
     public static class EnderecoResponse {
@@ -34,7 +35,7 @@ public class DenunciaResponse {
 
     public DenunciaResponse(Long id, String nomeLocal, EnderecoResponse endereco,
                             String problema, String sugestao, String emailUsuario,
-                            Instant criadoEm, List<ImagemMeta> imagens) {
+                            Instant criadoEm, String status, List<ImagemMeta> imagens) {
         this.id = id;
         this.nomeLocal = nomeLocal;
         this.endereco = endereco;
@@ -42,6 +43,7 @@ public class DenunciaResponse {
         this.sugestao = sugestao;
         this.emailUsuario = emailUsuario;
         this.criadoEm = criadoEm;
+        this.status = status;
         this.imagens = imagens;
     }
 }

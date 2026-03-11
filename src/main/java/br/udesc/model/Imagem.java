@@ -3,11 +3,11 @@ package br.udesc.model;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import org.hibernate.annotations.CreationTimestamp;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.Instant;
 
 @Entity
-@Table(name = "denuncia_imagem")
+@Table(name = "imagem")
 public class Imagem extends PanacheEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -55,3 +55,4 @@ public class Imagem extends PanacheEntity {
 
     public Instant getCriadoEm() { return criadoEm; }
 }
+

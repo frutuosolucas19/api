@@ -1,6 +1,6 @@
 package br.udesc.controller.repositories;
 
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 
 import br.udesc.model.Pessoa;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
@@ -9,4 +9,5 @@ import io.quarkus.hibernate.orm.panache.PanacheRepository;
 public class PessoaRepository implements PanacheRepository<Pessoa> {
 
 }
+
 

@@ -3,7 +3,7 @@ package br.udesc.model;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import org.hibernate.annotations.CreationTimestamp;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,29 +33,19 @@ public class Denuncia extends PanacheEntity {
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "status_id")
-    private Status statusAtual;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20)
+    private Status status;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "historico_id")
-    private Historico historico;
-
-    @OneToMany(
-            mappedBy = "denuncia",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
+    @OneToMany(mappedBy = "denuncia", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("ordem ASC, id ASC")
     private List<Imagem> imagens = new ArrayList<>();
 
     public Denuncia() {}
 
-    public Denuncia(String nomeLocal, Endereco endereco, String problema, String sugestao) {
-        this.nomeLocal = nomeLocal;
-        this.endereco = endereco;
-        this.problema = problema;
-        this.sugestao = sugestao;
+    @PrePersist
+    private void prePersist() {
+        if (status == null) status = Status.ENCAMINHADO;
     }
 
     public void addImagem(Imagem img) {
@@ -63,7 +53,6 @@ public class Denuncia extends PanacheEntity {
         img.setDenuncia(this);
         this.imagens.add(img);
     }
-
     public void removeImagem(Imagem img) {
         if (img == null) return;
         img.setDenuncia(null);
@@ -87,12 +76,10 @@ public class Denuncia extends PanacheEntity {
     public Usuario getUsuario() { return usuario; }
     public void setUsuario(Usuario usuario) { this.usuario = usuario; }
 
-    public Status getStatusAtual() { return statusAtual; }
-    public void setStatusAtual(Status statusAtual) { this.statusAtual = statusAtual; }
-
-    public Historico getHistorico() { return historico; }
-    public void setHistorico(Historico historico) { this.historico = historico; }
+    public Status getStatus() { return status; }
+    public void setStatus(Status status) { this.status = status; }
 
     public List<Imagem> getImagens() { return imagens; }
     public void setImagens(List<Imagem> imagens) { this.imagens = imagens; }
 }
+

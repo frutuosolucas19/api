@@ -1,6 +1,6 @@
 package br.udesc.model;
 
-import javax.persistence.Entity;
+import jakarta.persistence.Entity;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 
@@ -42,3 +42,4 @@ public class Localizacao extends PanacheEntity {
                 '}';
     }
 }
+

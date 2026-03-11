@@ -2,7 +2,7 @@ package br.udesc.model;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "endereco")
@@ -50,3 +50,4 @@ public class Endereco extends PanacheEntity {
     public String getComplemento() { return complemento; }
     public void setComplemento(String complemento) { this.complemento = complemento; }
 }
+

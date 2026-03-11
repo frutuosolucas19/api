@@ -1,7 +1,7 @@
 package br.udesc.model;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
-import javax.persistence.*;
+import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import java.time.Instant;
@@ -77,3 +77,4 @@ public class Usuario extends PanacheEntity {
                 '}';
     }
 }
+

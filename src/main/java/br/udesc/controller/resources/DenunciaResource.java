@@ -4,16 +4,13 @@ import br.udesc.controller.repositories.DenunciaRepository;
 import br.udesc.controller.repositories.UsuarioRepository;
 import br.udesc.dto.DenunciaRequest;
 import br.udesc.dto.DenunciaResponse;
-import br.udesc.model.Denuncia;
-import br.udesc.model.Imagem;
-import br.udesc.model.Endereco;
-import br.udesc.model.Usuario;
+import br.udesc.model.*;
 import io.quarkus.security.identity.SecurityIdentity;
 
-import javax.inject.Inject;
-import javax.transaction.Transactional;
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
 import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.util.Base64;
@@ -44,7 +41,7 @@ public class DenunciaResource {
         Usuario user = getUsuarioLogado();
 
         Denuncia d = denunciaRepository.findByIdOptional(id)
-                .orElseThrow(() -> new WebApplicationException("Denúncia não encontrada", 404));
+                .orElseThrow(() -> new WebApplicationException("DenÃºncia nÃ£o encontrada", 404));
 
         if (d.getUsuario() == null || !d.getUsuario().id.equals(user.id)) {
             throw new WebApplicationException("Acesso negado", 403);
@@ -81,6 +78,10 @@ public class DenunciaResource {
         d.setSugestao(req.sugestao);
         d.setUsuario(user);
 
+        if (d.getStatus() == null) {
+            d.setStatus(Status.ENCAMINHADO);
+        }
+
         anexarImagensRequest(d, req);
 
         denunciaRepository.persist(d);
@@ -96,7 +97,7 @@ public class DenunciaResource {
         Usuario user = getUsuarioLogado();
 
         Denuncia d = denunciaRepository.findByIdOptional(id)
-                .orElseThrow(() -> new WebApplicationException("Denúncia não encontrada", 404));
+                .orElseThrow(() -> new WebApplicationException("DenÃºncia nÃ£o encontrada", 404));
 
         if (d.getUsuario() == null || !d.getUsuario().id.equals(user.id)) {
             throw new WebApplicationException("Acesso negado", 403);
@@ -126,7 +127,7 @@ public class DenunciaResource {
         Usuario user = getUsuarioLogado();
 
         Denuncia d = denunciaRepository.findByIdOptional(id)
-                .orElseThrow(() -> new WebApplicationException("Denúncia não encontrada", 404));
+                .orElseThrow(() -> new WebApplicationException("DenÃºncia nÃ£o encontrada", 404));
 
         if (d.getUsuario() == null || !d.getUsuario().id.equals(user.id)) {
             throw new WebApplicationException("Acesso negado", 403);
@@ -144,7 +145,7 @@ public class DenunciaResource {
         Usuario user = getUsuarioLogado();
 
         Denuncia d = denunciaRepository.findByIdOptional(id)
-                .orElseThrow(() -> new WebApplicationException("Denúncia não encontrada", 404));
+                .orElseThrow(() -> new WebApplicationException("DenÃºncia nÃ£o encontrada", 404));
 
         if (d.getUsuario() == null || !d.getUsuario().id.equals(user.id)) {
             throw new WebApplicationException("Acesso negado", 403);
@@ -153,7 +154,7 @@ public class DenunciaResource {
         Imagem img = d.getImagens().stream()
                 .filter(i -> i.id.equals(imgId))
                 .findFirst()
-                .orElseThrow(() -> new WebApplicationException("Imagem não encontrada", 404));
+                .orElseThrow(() -> new WebApplicationException("Imagem nÃ£o encontrada", 404));
 
         return Response.ok(new ByteArrayInputStream(img.getDados()))
                 .type(img.getContentType() != null ? img.getContentType() : "application/octet-stream")
@@ -162,11 +163,10 @@ public class DenunciaResource {
                 .build();
     }
 
-
     private Usuario getUsuarioLogado() {
         String email = identity.getPrincipal().getName();
         return usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new WebApplicationException("Usuário não encontrado", 401));
+                .orElseThrow(() -> new WebApplicationException("UsuÃ¡rio nÃ£o encontrado", 401));
     }
 
     private void validarCamposObrigatorios(DenunciaRequest req) {
@@ -176,7 +176,7 @@ public class DenunciaResource {
                 || req.endereco  == null
                 || req.endereco.cidade == null || req.endereco.cidade.isBlank()
                 || req.endereco.uf == null || req.endereco.uf.isBlank()) {
-            throw new WebApplicationException("Campos obrigatórios: nomeLocal, problema, endereco.cidade, endereco.uf", 400);
+            throw new WebApplicationException("Campos obrigatÃ³rios: nomeLocal, problema, endereco.cidade, endereco.uf", 400);
         }
     }
 
@@ -187,13 +187,13 @@ public class DenunciaResource {
     }
 
     private void aplicarEndereco(Endereco e, DenunciaRequest req) {
-        if (req.endereco.logradouro != null) e.setLogradouro(req.endereco.logradouro);
-        if (req.endereco.numero != null)     e.setNumero(req.endereco.numero);
-        if (req.endereco.bairro != null)     e.setBairro(req.endereco.bairro);
-        if (req.endereco.cidade != null)     e.setCidade(req.endereco.cidade);
-        if (req.endereco.uf != null)         e.setUf(req.endereco.uf);
-        if (req.endereco.cep != null)        e.setCep(req.endereco.cep);
-        if (req.endereco.complemento != null)e.setComplemento(req.endereco.complemento);
+        if (req.endereco.logradouro != null)  e.setLogradouro(req.endereco.logradouro);
+        if (req.endereco.numero != null)      e.setNumero(req.endereco.numero);
+        if (req.endereco.bairro != null)      e.setBairro(req.endereco.bairro);
+        if (req.endereco.cidade != null)      e.setCidade(req.endereco.cidade);
+        if (req.endereco.uf != null)          e.setUf(req.endereco.uf);
+        if (req.endereco.cep != null)         e.setCep(req.endereco.cep);
+        if (req.endereco.complemento != null) e.setComplemento(req.endereco.complemento);
     }
 
     private void anexarImagensRequest(Denuncia d, DenunciaRequest req) {
@@ -237,11 +237,13 @@ public class DenunciaResource {
 
             UriBuilder b = uriInfo.getBaseUriBuilder()
                     .path(DenunciaResource.class)
-                    .path(DenunciaResource.class, "download");
+                    .path(DenunciaResource.class, "download"); // /denuncia/{id}/imagens/{imgId}
             URI url = b.build(d.id, di.id);
             m.url = url.toString();
             return m;
         }).collect(Collectors.toList());
+
+        String status = d.getStatus() != null ? d.getStatus().name() : null;
 
         return new DenunciaResponse(
                 d.id,
@@ -251,7 +253,9 @@ public class DenunciaResource {
                 d.getSugestao(),
                 d.getUsuario() != null ? d.getUsuario().getEmail() : null,
                 d.getCriadoEm(),
+                status,
                 imagens
         );
     }
 }
+

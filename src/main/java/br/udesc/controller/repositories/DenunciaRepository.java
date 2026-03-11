@@ -1,6 +1,6 @@
 package br.udesc.controller.repositories;
 
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.List;
 import br.udesc.model.Denuncia;
@@ -13,3 +13,4 @@ public class DenunciaRepository implements PanacheRepository<Denuncia> {
         return list("usuario.id", userId);
     }
 }
+
