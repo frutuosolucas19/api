@@ -61,25 +61,82 @@ Easily start your RESTful Web Services
 [Related guide section...](https://quarkus.io/guides/getting-started#the-jax-rs-resources)
 ## Environment variables
 
-This project now reads database and JWT secrets from environment variables.
+This project reads database and JWT settings from environment variables.
 
-Required in production:
+Required in all profiles (`dev`, `test`, `prod`):
 
 - `DB_USERNAME`
 - `DB_PASSWORD`
-- `DB_JDBC_URL` (example: `jdbc:postgresql://db:5432/api`)
-- `JWT_PRIVATE_KEY_LOCATION` (path to private key PEM)
-- `JWT_PUBLIC_KEY_LOCATION` (path to public key PEM)
-- `JWT_ISSUER` (optional, defaults to `udesc-api`)
+- `DB_JDBC_URL` (example: `jdbc:postgresql://localhost:5433/api`)
+- `JWT_PRIVATE_KEY_LOCATION` (absolute or relative path to private key PEM)
+- `JWT_PUBLIC_KEY_LOCATION` (absolute or relative path to public key PEM)
 
-Development/test defaults:
+Optional:
 
-- `DB_USERNAME=postgres`
-- `DB_PASSWORD=ADMIN`
-- `DB_JDBC_URL=jdbc:postgresql://localhost:5433/api`
-- JWT key locations fallback to `privateKey.pem` and `publicKey.pem` in `src/main/resources`
+- `JWT_ISSUER` (default: `udesc-api`)
+- `TEST_DB_CLEAN_AT_START` (default: `false`; use `true` only for isolated test DBs)
+
+Use a local `.env` file (ignored by git) for development convenience. See `.env.example`.
+
+## Database migrations
+
+- Schema evolution is managed by Flyway migrations in `src/main/resources/db/migration`.
+- `quarkus.hibernate-orm.schema-management.strategy=validate` is used to prevent implicit schema changes.
+- Do not use `update` in production; every schema change must be versioned migration.
 
 ## Auth rules by profile
 
-- `prod` (default behavior): only `/usuario` and `/usuario/login` are public; all other routes require JWT.
-- `dev`: also exposes `/`, `/index.html`, `/q/openapi`, `/q/swagger-ui/*` for local debugging.
+- `prod` (default behavior): only `/usuario/cadastro` and `/usuario/login` are public; all other routes require JWT.
+- `dev`: additionally exposes `/`, `/index.html`, `/q/openapi`, `/q/swagger-ui/*` for local debugging.
+
+## Secret hygiene
+
+JWT key material was detected in git history (older commits). To fully sanitize the repository:
+
+1. Rewrite history removing key files.
+2. Force-push rewritten branches/tags.
+3. Rotate all affected keys.
+
+Example with `git filter-repo`:
+
+```shell
+git filter-repo --invert-paths --path src/main/resources/privateKey.pem --path src/main/resources/publicKey.pem
+git push --force --all
+git push --force --tags
+```
+
+## CI/CD and production secret rotation
+
+After key rotation, update CI/CD and runtime secrets immediately.
+
+CI/CD (GitHub):
+
+1. Install/auth GitHub CLI: `gh auth login`.
+2. Run:
+
+```powershell
+./scripts/rotate-ci-secrets.ps1 `
+  -Repo "frutuosolucas19/api" `
+  -PrivateKeyPath "C:\Users\lucas\.secrets\api-jwt\privateKey-20260311-104247.pem" `
+  -PublicKeyPath "C:\Users\lucas\.secrets\api-jwt\publicKey-20260311-104247.pem" `
+  -DbUsername "<db-user>" `
+  -DbPassword "<db-pass>" `
+  -DbJdbcUrl "jdbc:postgresql://<host>:5432/api" `
+  -JwtIssuer "udesc-api"
+```
+
+Workflow note:
+
+- Store key PEMs in secrets (`JWT_PRIVATE_KEY_PEM`, `JWT_PUBLIC_KEY_PEM`).
+- During job execution, write them to temporary files and set:
+  `JWT_PRIVATE_KEY_LOCATION` and `JWT_PUBLIC_KEY_LOCATION`.
+
+Server/containers:
+
+1. Copy new PEM files to a protected path outside the app repo.
+2. Update env vars:
+   - `JWT_PRIVATE_KEY_LOCATION`
+   - `JWT_PUBLIC_KEY_LOCATION`
+   - `DB_USERNAME`, `DB_PASSWORD`, `DB_JDBC_URL`, `JWT_ISSUER`
+3. Restart application/container.
+4. Revoke old keys and remove old files.
