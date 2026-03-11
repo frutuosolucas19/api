@@ -2,6 +2,8 @@ package br.udesc.controller.resources;
 
 import java.util.List;
 
+import jakarta.annotation.security.RolesAllowed;
+
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
@@ -12,8 +14,11 @@ import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
+import java.net.URI;
 
 import br.udesc.controller.repositories.ForumRepository;
 import br.udesc.model.Forum;
@@ -21,17 +26,24 @@ import br.udesc.model.Forum;
 @Path("/forum")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@RolesAllowed("User")
 public class ForumResource {
 
     @Inject
     ForumRepository forumRepository;
 
     @GET
-    @Path("/foruns")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAll() {
         List<Forum> foruns = forumRepository.listAll();
         return Response.ok(foruns).build();
+    }
+
+    @GET
+    @Path("/foruns")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAllLegacy() {
+        return getAll();
     }
 
     @GET
@@ -47,10 +59,11 @@ public class ForumResource {
     @Transactional
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response create(Forum forum) {
+    public Response create(Forum forum, @Context UriInfo uriInfo) {
         forumRepository.persist(forum);
         if (forumRepository.isPersistent(forum)) {
-            return Response.status(200).build();
+            URI location = uriInfo.getAbsolutePathBuilder().path(String.valueOf(forum.id)).build();
+            return Response.created(location).entity(forum).build();
         }
         return Response.status(404).build();
     }
@@ -62,6 +75,9 @@ public class ForumResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response update(@PathParam("id") Long id, Forum forum) {
         Forum f = forumRepository.findById(id);
+        if (f == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
         f.setUsuario(forum.getUsuario());
         return Response.status(200).build();
 
@@ -77,4 +93,5 @@ public class ForumResource {
     }
     
 }
+
 

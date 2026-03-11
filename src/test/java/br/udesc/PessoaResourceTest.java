@@ -13,7 +13,7 @@ public class PessoaResourceTest {
     @Test
     public void testProtectedEndpointWithJwtFlow() {
         given()
-                .when().get("/pessoa/pessoas")
+                .when().get("/pessoa")
                 .then()
                 .statusCode(401);
 
@@ -28,7 +28,7 @@ public class PessoaResourceTest {
 
         given()
                 .header("Authorization", "Bearer " + token)
-                .when().get("/pessoa/pessoas")
+                .when().get("/pessoa")
                 .then()
                 .statusCode(200);
     }

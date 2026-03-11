@@ -1,6 +1,8 @@
 package br.udesc.controller.resources;
 import java.util.stream.Collectors;
 
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
@@ -16,13 +18,13 @@ import br.udesc.model.Usuario;
 @Path("/usuario")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@RolesAllowed("User")
 public class UsuarioResource {
 
     @Inject UsuarioRepository usuarioRepository;
     @Inject JwtService jwtService;
 
     @GET
-    @Path("/usuarios")
     public Response getAll() {
         var lista = usuarioRepository.listAll().stream()
             .map(u -> new UsuarioResponse(u.id, u.getPessoa(), u.getEmail(), u.getTipoUsuario()))
@@ -31,7 +33,15 @@ public class UsuarioResource {
         return Response.ok(lista).build();
     }
 
+    @GET
+    @Path("/usuarios")
+    public Response getAllLegacy() {
+        return getAll();
+    }
+
     @POST
+    @Path("/cadastro")
+    @PermitAll
     @Transactional
     public Response create(Usuario usuario) {
         if (usuario == null
@@ -39,12 +49,12 @@ public class UsuarioResource {
             || usuario.getPessoa() == null
             || usuario.getTipoUsuario() == null || usuario.getTipoUsuario().isBlank()
             || usuario.getSenha() == null || usuario.getSenha().isBlank()) {
-            return Response.status(400).entity("Dados obrigatÃ³rios ausentes").build();
+            return Response.status(400).entity("Dados obrigatorios ausentes").build();
         }
 
         usuario.setEmail(usuario.getEmail().trim().toLowerCase());
         if (usuarioRepository.count("email", usuario.getEmail()) > 0) {
-            return Response.status(409).entity("E-mail jÃ¡ cadastrado").build();
+            return Response.status(409).entity("E-mail ja cadastrado").build();
         }
 
         String hash = at.favre.lib.crypto.bcrypt.BCrypt.withDefaults()
@@ -61,9 +71,10 @@ public class UsuarioResource {
 
     @POST
     @Path("/login")
+    @PermitAll
     public Response login(LoginRequest loginRequest) {
         if (loginRequest == null || loginRequest.email == null || loginRequest.senha == null) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("Email e senha sÃ£o obrigatÃ³rios.").build();
+            return Response.status(Response.Status.BAD_REQUEST).entity("Email e senha sao obrigatorios.").build();
         }
 
         String emailLower = loginRequest.email.trim().toLowerCase();
@@ -71,7 +82,7 @@ public class UsuarioResource {
 
         var usuarioOpt = usuarioRepository.findByEmail(emailLower);
         if (usuarioOpt.isEmpty()) {
-            return Response.status(Response.Status.UNAUTHORIZED).entity("Email ou senha invÃ¡lidos").build();
+            return Response.status(Response.Status.UNAUTHORIZED).entity("Email ou senha invalidos").build();
         }
 
         Usuario usuario = usuarioOpt.get();
@@ -81,7 +92,7 @@ public class UsuarioResource {
                 .verified;
 
         if (!ok) {
-            return Response.status(Response.Status.UNAUTHORIZED).entity("Email ou senha invÃ¡lidos").build();
+            return Response.status(Response.Status.UNAUTHORIZED).entity("Email ou senha invalidos").build();
         }
 
         String token = jwtService.gerarToken(usuario.getEmail(), usuario.id);

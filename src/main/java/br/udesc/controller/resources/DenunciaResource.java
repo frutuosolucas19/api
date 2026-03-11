@@ -15,11 +15,14 @@ import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.util.Base64;
 import java.util.List;
+
+import jakarta.annotation.security.RolesAllowed;
 import java.util.stream.Collectors;
 
 @Path("/denuncia")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@RolesAllowed("User")
 public class DenunciaResource {
 
     @Inject DenunciaRepository denunciaRepository;
@@ -27,7 +30,6 @@ public class DenunciaResource {
     @Inject SecurityIdentity identity;
 
     @GET
-    @Path("/denuncias")
     public Response getAll(@Context UriInfo uriInfo) {
         List<DenunciaResponse> lista = denunciaRepository.listAll().stream()
                 .map(d -> toResponse(d, uriInfo))
@@ -36,12 +38,18 @@ public class DenunciaResource {
     }
 
     @GET
+    @Path("/denuncias")
+    public Response getAllLegacy(@Context UriInfo uriInfo) {
+        return getAll(uriInfo);
+    }
+
+    @GET
     @Path("/{id}")
     public Response getById(@PathParam("id") Long id, @Context UriInfo uriInfo) {
         Usuario user = getUsuarioLogado();
 
         Denuncia d = denunciaRepository.findByIdOptional(id)
-                .orElseThrow(() -> new WebApplicationException("DenÃºncia nÃ£o encontrada", 404));
+                .orElseThrow(() -> new WebApplicationException("Denuncia nao encontrada", 404));
 
         if (d.getUsuario() == null || !d.getUsuario().id.equals(user.id)) {
             throw new WebApplicationException("Acesso negado", 403);
@@ -97,7 +105,7 @@ public class DenunciaResource {
         Usuario user = getUsuarioLogado();
 
         Denuncia d = denunciaRepository.findByIdOptional(id)
-                .orElseThrow(() -> new WebApplicationException("DenÃºncia nÃ£o encontrada", 404));
+                .orElseThrow(() -> new WebApplicationException("Denuncia nao encontrada", 404));
 
         if (d.getUsuario() == null || !d.getUsuario().id.equals(user.id)) {
             throw new WebApplicationException("Acesso negado", 403);
@@ -127,7 +135,7 @@ public class DenunciaResource {
         Usuario user = getUsuarioLogado();
 
         Denuncia d = denunciaRepository.findByIdOptional(id)
-                .orElseThrow(() -> new WebApplicationException("DenÃºncia nÃ£o encontrada", 404));
+                .orElseThrow(() -> new WebApplicationException("Denuncia nao encontrada", 404));
 
         if (d.getUsuario() == null || !d.getUsuario().id.equals(user.id)) {
             throw new WebApplicationException("Acesso negado", 403);
@@ -145,7 +153,7 @@ public class DenunciaResource {
         Usuario user = getUsuarioLogado();
 
         Denuncia d = denunciaRepository.findByIdOptional(id)
-                .orElseThrow(() -> new WebApplicationException("DenÃºncia nÃ£o encontrada", 404));
+                .orElseThrow(() -> new WebApplicationException("Denuncia nao encontrada", 404));
 
         if (d.getUsuario() == null || !d.getUsuario().id.equals(user.id)) {
             throw new WebApplicationException("Acesso negado", 403);
@@ -154,7 +162,7 @@ public class DenunciaResource {
         Imagem img = d.getImagens().stream()
                 .filter(i -> i.id.equals(imgId))
                 .findFirst()
-                .orElseThrow(() -> new WebApplicationException("Imagem nÃ£o encontrada", 404));
+                .orElseThrow(() -> new WebApplicationException("Imagem nao encontrada", 404));
 
         return Response.ok(new ByteArrayInputStream(img.getDados()))
                 .type(img.getContentType() != null ? img.getContentType() : "application/octet-stream")
@@ -166,7 +174,7 @@ public class DenunciaResource {
     private Usuario getUsuarioLogado() {
         String email = identity.getPrincipal().getName();
         return usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new WebApplicationException("UsuÃ¡rio nÃ£o encontrado", 401));
+                .orElseThrow(() -> new WebApplicationException("Usuario nao encontrado", 401));
     }
 
     private void validarCamposObrigatorios(DenunciaRequest req) {
@@ -176,7 +184,7 @@ public class DenunciaResource {
                 || req.endereco  == null
                 || req.endereco.cidade == null || req.endereco.cidade.isBlank()
                 || req.endereco.uf == null || req.endereco.uf.isBlank()) {
-            throw new WebApplicationException("Campos obrigatÃ³rios: nomeLocal, problema, endereco.cidade, endereco.uf", 400);
+            throw new WebApplicationException("Campos obrigatorios: nomeLocal, problema, endereco.cidade, endereco.uf", 400);
         }
     }
 
@@ -258,4 +266,5 @@ public class DenunciaResource {
         );
     }
 }
+
 
