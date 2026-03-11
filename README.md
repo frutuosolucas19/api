@@ -59,3 +59,27 @@ If you want to learn more about building native executables, please consult http
 Easily start your RESTful Web Services
 
 [Related guide section...](https://quarkus.io/guides/getting-started#the-jax-rs-resources)
+## Environment variables
+
+This project now reads database and JWT secrets from environment variables.
+
+Required in production:
+
+- `DB_USERNAME`
+- `DB_PASSWORD`
+- `DB_JDBC_URL` (example: `jdbc:postgresql://db:5432/api`)
+- `JWT_PRIVATE_KEY_LOCATION` (path to private key PEM)
+- `JWT_PUBLIC_KEY_LOCATION` (path to public key PEM)
+- `JWT_ISSUER` (optional, defaults to `udesc-api`)
+
+Development/test defaults:
+
+- `DB_USERNAME=postgres`
+- `DB_PASSWORD=ADMIN`
+- `DB_JDBC_URL=jdbc:postgresql://localhost:5433/api`
+- JWT key locations fallback to `privateKey.pem` and `publicKey.pem` in `src/main/resources`
+
+## Auth rules by profile
+
+- `prod` (default behavior): only `/usuario` and `/usuario/login` are public; all other routes require JWT.
+- `dev`: also exposes `/`, `/index.html`, `/q/openapi`, `/q/swagger-ui/*` for local debugging.
