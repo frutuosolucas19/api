@@ -11,21 +11,21 @@ public class Forum extends PanacheEntity {
 
     @OneToOne
     @JoinColumn(name="usuario_id")
-    private Usuario usuario;
+    private User usuario;
     
     public Forum() {
     }
 
-    public Forum(Usuario usuario) {
+    public Forum(User usuario) {
         this.usuario = usuario;
         
     }
 
-    public Usuario getUsuario() {
+    public User getUsuario() {
         return usuario;
     }
 
-    public void setUsuario(Usuario usuario) {
+    public void setUsuario(User usuario) {
         this.usuario = usuario;
     }
        
@@ -36,4 +36,5 @@ public class Forum extends PanacheEntity {
                 '}';
     }
 }
+
 

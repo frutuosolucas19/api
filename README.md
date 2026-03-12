@@ -68,8 +68,8 @@ Required in all profiles (`dev`, `test`, `prod`):
 - `DB_USERNAME`
 - `DB_PASSWORD`
 - `DB_JDBC_URL` (example: `jdbc:postgresql://localhost:5433/api`)
-- `JWT_PRIVATE_KEY_LOCATION` (absolute or relative path to private key PEM)
-- `JWT_PUBLIC_KEY_LOCATION` (absolute or relative path to public key PEM)
+- `JWT_PRIVATE_KEY_LOCATION` (file URI to private key PEM, e.g. `file:///C:/secure-path/privateKey.pem`)
+- `JWT_PUBLIC_KEY_LOCATION` (file URI to public key PEM, e.g. `file:///C:/secure-path/publicKey.pem`)
 
 Optional:
 
