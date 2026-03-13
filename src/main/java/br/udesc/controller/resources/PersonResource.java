@@ -20,6 +20,7 @@ import jakarta.ws.rs.core.UriInfo;
 import java.net.URI;
 
 import br.udesc.controller.repositories.PersonRepository;
+import br.udesc.dto.ErrorResponse;
 import br.udesc.model.Person;
 
 
@@ -60,12 +61,17 @@ public class PersonResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response create(Person pessoa, @Context UriInfo uriInfo) {
+        if (pessoa == null || pessoa.getNome() == null || pessoa.getNome().isBlank()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new ErrorResponse("Nome obrigatorio."))
+                    .build();
+        }
         pessoaRepository.persist(pessoa);
         if (pessoaRepository.isPersistent(pessoa)) {
             URI location = uriInfo.getAbsolutePathBuilder().path(String.valueOf(pessoa.id)).build();
             return Response.created(location).entity(pessoa).build();
         }
-        return Response.status(404).build();
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
     }
 
     @PUT
@@ -74,12 +80,21 @@ public class PersonResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response update(@PathParam("id") Long id, Person pessoa) {
+        if (pessoa == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new ErrorResponse("Payload obrigatorio."))
+                    .build();
+        }
         Person p = pessoaRepository.findById(id);
         if (p == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        p.setNome(pessoa.getNome());
-        p.setImagem(pessoa.getImagem());
+        if (pessoa.getNome() != null && !pessoa.getNome().isBlank()) {
+            p.setNome(pessoa.getNome());
+        }
+        if (pessoa.getImagem() != null) {
+            p.setImagem(pessoa.getImagem());
+        }
         return Response.status(200).build();
 
     }

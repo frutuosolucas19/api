@@ -4,6 +4,7 @@ import br.udesc.controller.repositories.ReportRepository;
 import br.udesc.controller.repositories.UserRepository;
 import br.udesc.dto.ReportRequest;
 import br.udesc.dto.ReportResponse;
+import br.udesc.dto.ErrorResponse;
 import br.udesc.model.*;
 import io.quarkus.security.identity.SecurityIdentity;
 
@@ -102,6 +103,12 @@ public class ReportResource {
     @Path("/{id}")
     @Transactional
     public Response update(@PathParam("id") Long id, ReportRequest req, @Context UriInfo uriInfo) {
+        if (req == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new ErrorResponse("Payload obrigatorio."))
+                    .build();
+        }
+
         User user = getUsuarioLogado();
 
         Report d = denunciaRepository.findByIdOptional(id)
@@ -210,7 +217,12 @@ public class ReportResource {
         for (var imgReq : req.imagens) {
             if (imgReq == null || imgReq.base64 == null || imgReq.base64.isBlank()) continue;
 
-            byte[] bytes = Base64.getDecoder().decode(imgReq.base64);
+            byte[] bytes;
+            try {
+                bytes = Base64.getDecoder().decode(imgReq.base64);
+            } catch (IllegalArgumentException ex) {
+                throw new WebApplicationException("Imagem base64 invalida.", 400);
+            }
 
             Image di = new Image();
             di.setDados(bytes);

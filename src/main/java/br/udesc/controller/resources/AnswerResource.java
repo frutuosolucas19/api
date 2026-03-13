@@ -21,6 +21,7 @@ import jakarta.ws.rs.core.UriInfo;
 import java.net.URI;
 
 import br.udesc.controller.repositories.AnswerRepository;
+import br.udesc.dto.ErrorResponse;
 import br.udesc.model.Answer;
 
 @Path("/resposta")
@@ -60,12 +61,19 @@ public class AnswerResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response create(Answer resposta, @Context UriInfo uriInfo) {
+        if (resposta == null
+                || resposta.getResposta() == null || resposta.getResposta().isBlank()
+                || resposta.getPergunta() == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new ErrorResponse("Campos obrigatorios: resposta, pergunta."))
+                    .build();
+        }
         respostaRepository.persist(resposta);
         if (respostaRepository.isPersistent(resposta)) {
             URI location = uriInfo.getAbsolutePathBuilder().path(String.valueOf(resposta.id)).build();
             return Response.created(location).entity(resposta).build();
         }
-        return Response.status(404).build();
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
     }
 
     @PUT
@@ -74,12 +82,17 @@ public class AnswerResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response update(@PathParam("id") Long id, Answer resposta) {
+        if (resposta == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new ErrorResponse("Payload obrigatorio."))
+                    .build();
+        }
         Answer r = respostaRepository.findById(id);
         if (r == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        r.setPergunta(resposta.getPergunta());
-        r.setResposta(resposta.getResposta());
+        if (resposta.getPergunta() != null) r.setPergunta(resposta.getPergunta());
+        if (resposta.getResposta() != null && !resposta.getResposta().isBlank()) r.setResposta(resposta.getResposta());
         return Response.status(200).build();
 
     }

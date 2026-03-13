@@ -21,6 +21,7 @@ import jakarta.ws.rs.core.UriInfo;
 import java.net.URI;
 
 import br.udesc.controller.repositories.QuestionRepository;
+import br.udesc.dto.ErrorResponse;
 import br.udesc.model.Question;
 
 @Path("/pergunta")
@@ -60,12 +61,19 @@ public class QuestionResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response create(Question pergunta, @Context UriInfo uriInfo) {
+        if (pergunta == null
+                || pergunta.getPergunta() == null || pergunta.getPergunta().isBlank()
+                || pergunta.getForum() == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new ErrorResponse("Campos obrigatorios: pergunta, forum."))
+                    .build();
+        }
         perguntaRepository.persist(pergunta);
         if (perguntaRepository.isPersistent(pergunta)) {
             URI location = uriInfo.getAbsolutePathBuilder().path(String.valueOf(pergunta.id)).build();
             return Response.created(location).entity(pergunta).build();
         }
-        return Response.status(404).build();
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
     }
 
     @PUT
@@ -74,12 +82,17 @@ public class QuestionResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response update(@PathParam("id") Long id, Question pergunta) {
+        if (pergunta == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new ErrorResponse("Payload obrigatorio."))
+                    .build();
+        }
         Question p = perguntaRepository.findById(id);
         if (p == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        p.setForum(pergunta.getForum());
-        p.setPergunta(pergunta.getPergunta());
+        if (pergunta.getForum() != null) p.setForum(pergunta.getForum());
+        if (pergunta.getPergunta() != null && !pergunta.getPergunta().isBlank()) p.setPergunta(pergunta.getPergunta());
         return Response.status(200).build();
 
     }

@@ -21,6 +21,7 @@ import jakarta.ws.rs.core.UriInfo;
 import java.net.URI;
 
 import br.udesc.controller.repositories.LocationRepository;
+import br.udesc.dto.ErrorResponse;
 import br.udesc.model.Location;
 
 @Path("/localizacao")
@@ -60,12 +61,19 @@ public class LocationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response create(Location localizacao, @Context UriInfo uriInfo) {
+        if (localizacao == null
+                || localizacao.getLatitude() == null || localizacao.getLatitude().isBlank()
+                || localizacao.getLongitude() == null || localizacao.getLongitude().isBlank()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new ErrorResponse("Campos obrigatorios: latitude, longitude."))
+                    .build();
+        }
         localizacaoRepository.persist(localizacao);
         if (localizacaoRepository.isPersistent(localizacao)) {
             URI location = uriInfo.getAbsolutePathBuilder().path(String.valueOf(localizacao.id)).build();
             return Response.created(location).entity(localizacao).build();
         }
-        return Response.status(404).build();
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
     }
 
     @PUT
@@ -74,12 +82,21 @@ public class LocationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response update(@PathParam("id") Long id, Location localizacao) {
+        if (localizacao == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new ErrorResponse("Payload obrigatorio."))
+                    .build();
+        }
         Location l = localizacaoRepository.findById(id);
         if (l == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        l.setLatitude(localizacao.getLatitude());
-        l.setLongitude(localizacao.getLongitude());
+        if (localizacao.getLatitude() != null && !localizacao.getLatitude().isBlank()) {
+            l.setLatitude(localizacao.getLatitude());
+        }
+        if (localizacao.getLongitude() != null && !localizacao.getLongitude().isBlank()) {
+            l.setLongitude(localizacao.getLongitude());
+        }
         return Response.status(200).build();
 
     }

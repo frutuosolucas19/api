@@ -21,6 +21,7 @@ import jakarta.ws.rs.core.UriInfo;
 import java.net.URI;
 
 import br.udesc.controller.repositories.AddressRepository;
+import br.udesc.dto.ErrorResponse;
 import br.udesc.model.Address;
 
 @Path("/endereco")
@@ -60,12 +61,21 @@ public class AddressResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response create(Address endereco, @Context UriInfo uriInfo) {
+        if (endereco == null
+                || endereco.getLogradouro() == null || endereco.getLogradouro().isBlank()
+                || endereco.getCidade() == null || endereco.getCidade().isBlank()
+                || endereco.getUf() == null || endereco.getUf().isBlank()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new ErrorResponse("Campos obrigatorios: logradouro, cidade, uf."))
+                    .build();
+        }
+
         enderecoRepository.persist(endereco);
         if (enderecoRepository.isPersistent(endereco)) {
             URI location = uriInfo.getAbsolutePathBuilder().path(String.valueOf(endereco.id)).build();
             return Response.created(location).entity(endereco).build();
         }
-        return Response.status(404).build();
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
     }
 
     @PUT
@@ -74,17 +84,22 @@ public class AddressResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response update(@PathParam("id") Long id, Address endereco) {
+        if (endereco == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new ErrorResponse("Payload obrigatorio."))
+                    .build();
+        }
         Address e = enderecoRepository.findById(id);
         if (e == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        e.setCep(endereco.getCep());
-        e.setLogradouro(endereco.getLogradouro());
-        e.setNumero(endereco.getNumero());
-        e.setComplemento(endereco.getComplemento());
-        e.setBairro(endereco.getBairro());
-        e.setCidade(endereco.getCidade());
-        e.setUf(endereco.getUf());
+        if (endereco.getCep() != null) e.setCep(endereco.getCep());
+        if (endereco.getLogradouro() != null && !endereco.getLogradouro().isBlank()) e.setLogradouro(endereco.getLogradouro());
+        if (endereco.getNumero() != null) e.setNumero(endereco.getNumero());
+        if (endereco.getComplemento() != null) e.setComplemento(endereco.getComplemento());
+        if (endereco.getBairro() != null) e.setBairro(endereco.getBairro());
+        if (endereco.getCidade() != null && !endereco.getCidade().isBlank()) e.setCidade(endereco.getCidade());
+        if (endereco.getUf() != null && !endereco.getUf().isBlank()) e.setUf(endereco.getUf());
         return Response.status(200).build();
 
     }

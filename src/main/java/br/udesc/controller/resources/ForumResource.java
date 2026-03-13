@@ -21,6 +21,7 @@ import jakarta.ws.rs.core.UriInfo;
 import java.net.URI;
 
 import br.udesc.controller.repositories.ForumRepository;
+import br.udesc.dto.ErrorResponse;
 import br.udesc.model.Forum;
 
 @Path("/forum")
@@ -60,12 +61,17 @@ public class ForumResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response create(Forum forum, @Context UriInfo uriInfo) {
+        if (forum == null || forum.getUsuario() == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new ErrorResponse("Usuario obrigatorio para criar forum."))
+                    .build();
+        }
         forumRepository.persist(forum);
         if (forumRepository.isPersistent(forum)) {
             URI location = uriInfo.getAbsolutePathBuilder().path(String.valueOf(forum.id)).build();
             return Response.created(location).entity(forum).build();
         }
-        return Response.status(404).build();
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
     }
 
     @PUT
@@ -74,11 +80,18 @@ public class ForumResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response update(@PathParam("id") Long id, Forum forum) {
+        if (forum == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new ErrorResponse("Payload obrigatorio."))
+                    .build();
+        }
         Forum f = forumRepository.findById(id);
         if (f == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        f.setUsuario(forum.getUsuario());
+        if (forum.getUsuario() != null) {
+            f.setUsuario(forum.getUsuario());
+        }
         return Response.status(200).build();
 
     }

@@ -60,6 +60,9 @@ public class UserResource {
         if (usuarioRepository.count("email", usuario.getEmail()) > 0) {
             return Response.status(409).entity("E-mail ja cadastrado").build();
         }
+        if (!isSenhaValida(usuario.getSenha())) {
+            return badRequest("Senha invalida. Minimo de 8 caracteres.");
+        }
 
         String hash = at.favre.lib.crypto.bcrypt.BCrypt.withDefaults()
                 .hashToString(12, usuario.getSenha().toCharArray());
@@ -176,6 +179,50 @@ public class UserResource {
         return usuarioRepository.findByIdOptional(id)
             .map(u -> Response.ok(new br.udesc.dto.UserResponse(u.id, u.getPessoa(), u.getEmail(), u.getTipoUsuario())).build())
             .orElse(Response.status(Response.Status.NOT_FOUND).build());
+    }
+
+    @PUT
+    @Path("/{id}")
+    @Transactional
+    public Response update(@PathParam("id") Long id, User payload) {
+        if (payload == null) {
+            return badRequest("Payload obrigatorio.");
+        }
+
+        User atual = usuarioRepository.findById(id);
+        if (atual == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (payload.getEmail() != null && !payload.getEmail().isBlank()) {
+            String novoEmail = payload.getEmail().trim().toLowerCase();
+            var donoEmail = usuarioRepository.findByEmailIgnoreCase(novoEmail);
+            if (donoEmail.isPresent() && !donoEmail.get().id.equals(atual.id)) {
+                return Response.status(Response.Status.CONFLICT)
+                        .entity(new ErrorResponse("E-mail ja cadastrado."))
+                        .build();
+            }
+            atual.setEmail(novoEmail);
+        }
+
+        if (payload.getPessoa() != null) {
+            atual.setPessoa(payload.getPessoa());
+        }
+
+        if (payload.getTipoUsuario() != null && !payload.getTipoUsuario().isBlank()) {
+            atual.setTipoUsuario(payload.getTipoUsuario().trim());
+        }
+
+        if (payload.getSenha() != null && !payload.getSenha().isBlank()) {
+            if (!isSenhaValida(payload.getSenha())) {
+                return badRequest("Senha invalida. Minimo de 8 caracteres.");
+            }
+            String hash = at.favre.lib.crypto.bcrypt.BCrypt.withDefaults()
+                    .hashToString(12, payload.getSenha().toCharArray());
+            atual.setSenhaHash(hash);
+        }
+
+        return Response.ok(new UserResponse(atual.id, atual.getPessoa(), atual.getEmail(), atual.getTipoUsuario())).build();
     }
 
     @DELETE

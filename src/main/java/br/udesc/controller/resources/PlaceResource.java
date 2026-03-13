@@ -21,6 +21,7 @@ import jakarta.ws.rs.core.UriInfo;
 import java.net.URI;
 
 import br.udesc.controller.repositories.PlaceRepository;
+import br.udesc.dto.ErrorResponse;
 import br.udesc.model.Place;
 
 @Path("/local")
@@ -47,6 +48,13 @@ public class PlaceResource {
     }
 
     @GET
+    @Path("/locais")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAllAlias() {
+        return getAll();
+    }
+
+    @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getById(@PathParam("id") Long id) {
@@ -60,12 +68,17 @@ public class PlaceResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response create(Place local, @Context UriInfo uriInfo) {
+        if (local == null || local.getNome() == null || local.getNome().isBlank()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new ErrorResponse("Nome do local obrigatorio."))
+                    .build();
+        }
         localRepository.persist(local);
         if (localRepository.isPersistent(local)) {
             URI location = uriInfo.getAbsolutePathBuilder().path(String.valueOf(local.id)).build();
             return Response.created(location).entity(local).build();
         }
-        return Response.status(404).build();
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
     }
 
     @PUT
@@ -74,13 +87,18 @@ public class PlaceResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response update(@PathParam("id") Long id, Place local) {
+        if (local == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new ErrorResponse("Payload obrigatorio."))
+                    .build();
+        }
         Place l = localRepository.findById(id);
         if (l == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        l.setNome(local.getNome());
-        l.setLocalizacao(local.getLocalizacao());
-        l.setEndereco(local.getEndereco());
+        if (local.getNome() != null && !local.getNome().isBlank()) l.setNome(local.getNome());
+        if (local.getLocalizacao() != null) l.setLocalizacao(local.getLocalizacao());
+        if (local.getEndereco() != null) l.setEndereco(local.getEndereco());
         return Response.status(200).build();
 
     }
