@@ -21,6 +21,7 @@ public class Answer extends PanacheEntity {
     }
 
     public Answer(Question pergunta, String resposta) {
+        this.pergunta = pergunta;
         this.resposta = resposta;
     }
 

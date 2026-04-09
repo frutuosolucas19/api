@@ -12,15 +12,18 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 @ApplicationScoped
 public class JwtService {
     private static final String RECUPERACAO_SENHA = "password-reset";
+    private static final String ISSUER = "udesc-api";
+    private static final long TOKEN_EXPIRY_SECONDS = 3600;       // 1 hora
+    private static final long RESET_TOKEN_EXPIRY_SECONDS = 900;  // 15 minutos
 
     @Inject
     JWTParser jwtParser;
 
     public String gerarToken(String email, Long userId){
         long iat = System.currentTimeMillis()/1000;
-        long exp = iat + 3600; // 1 hora
+        long exp = iat + TOKEN_EXPIRY_SECONDS;
 
-        return Jwt.issuer("udesc-api")
+        return Jwt.issuer(ISSUER)
                 .subject(email)
                 .upn(email)
                 .claim("uid", userId)
@@ -31,9 +34,9 @@ public class JwtService {
 
     public String gerarTokenRecuperacaoSenha(String email) {
         long iat = System.currentTimeMillis() / 1000;
-        long exp = iat + 900; // 15 minutos
+        long exp = iat + RESET_TOKEN_EXPIRY_SECONDS;
 
-        return Jwt.issuer("udesc-api")
+        return Jwt.issuer(ISSUER)
                 .subject(email)
                 .upn(email)
                 .claim("purpose", RECUPERACAO_SENHA)

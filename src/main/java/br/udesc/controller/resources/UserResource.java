@@ -5,6 +5,7 @@ import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
 
@@ -24,13 +25,16 @@ import br.udesc.model.User;
 @RolesAllowed("User")
 public class UserResource {
     private static final int TAMANHO_MINIMO_SENHA = 8;
+    private static final int BCRYPT_COST = 12;
 
     @Inject UserRepository usuarioRepository;
     @Inject JwtService jwtService;
 
     @GET
-    public Response getAll() {
-        var lista = usuarioRepository.listAll().stream()
+    public Response getAll(
+            @QueryParam("page") @DefaultValue("0") int page,
+            @QueryParam("size") @DefaultValue("20") int size) {
+        var lista = usuarioRepository.findAll().page(page, size).list().stream()
             .map(u -> new UserResponse(u.id, u.getPessoa(), u.getEmail(), u.getTipoUsuario()))
             .collect(Collectors.toList());
 
@@ -39,8 +43,10 @@ public class UserResource {
 
     @GET
     @Path("/usuarios")
-    public Response getAllLegacy() {
-        return getAll();
+    public Response getAllLegacy(
+            @QueryParam("page") @DefaultValue("0") int page,
+            @QueryParam("size") @DefaultValue("20") int size) {
+        return getAll(page, size);
     }
 
     @POST
@@ -65,7 +71,7 @@ public class UserResource {
         }
 
         String hash = at.favre.lib.crypto.bcrypt.BCrypt.withDefaults()
-                .hashToString(12, usuario.getSenha().toCharArray());
+                .hashToString(BCRYPT_COST,usuario.getSenha().toCharArray());
         usuario.setSenhaHash(hash);
         usuario.setSenha(null); 
 
@@ -79,7 +85,7 @@ public class UserResource {
     @POST
     @Path("/login")
     @PermitAll
-    public Response login(LoginRequest loginRequest) {
+    public Response login(@Valid LoginRequest loginRequest) {
         if (loginRequest == null || loginRequest.email == null || loginRequest.senha == null) {
             return Response.status(Response.Status.BAD_REQUEST).entity("Email e senha sao obrigatorios.").build();
         }
@@ -117,7 +123,7 @@ public class UserResource {
     @POST
     @Path("/esqueci-senha")
     @PermitAll
-    public Response esqueciSenha(ForgotPasswordRequest request) {
+    public Response esqueciSenha(@Valid ForgotPasswordRequest request) {
         if (request == null || request.email == null || request.email.isBlank()) {
             return badRequest("Email obrigatorio.");
         }
@@ -143,7 +149,7 @@ public class UserResource {
     @Path("/redefinir-senha")
     @PermitAll
     @Transactional
-    public Response redefinirSenha(ResetPasswordRequest request) {
+    public Response redefinirSenha(@Valid ResetPasswordRequest request) {
         if (request == null
                 || request.tokenAws == null || request.tokenAws.isBlank()
                 || request.novaSenha == null || request.novaSenha.isBlank()) {
@@ -166,7 +172,7 @@ public class UserResource {
 
         User usuario = usuarioOpt.get();
         String novoHash = at.favre.lib.crypto.bcrypt.BCrypt.withDefaults()
-                .hashToString(12, request.novaSenha.toCharArray());
+                .hashToString(BCRYPT_COST,request.novaSenha.toCharArray());
         usuario.setSenhaHash(novoHash);
         usuarioRepository.persist(usuario);
 
@@ -218,7 +224,7 @@ public class UserResource {
                 return badRequest("Senha invalida. Minimo de 8 caracteres.");
             }
             String hash = at.favre.lib.crypto.bcrypt.BCrypt.withDefaults()
-                    .hashToString(12, payload.getSenha().toCharArray());
+                    .hashToString(BCRYPT_COST,payload.getSenha().toCharArray());
             atual.setSenhaHash(hash);
         }
 

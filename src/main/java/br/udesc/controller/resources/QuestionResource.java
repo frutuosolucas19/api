@@ -8,12 +8,14 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -35,16 +37,20 @@ public class QuestionResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getAll() {
-        List<Question> perguntas = perguntaRepository.listAll();
+    public Response getAll(
+            @QueryParam("page") @DefaultValue("0") int page,
+            @QueryParam("size") @DefaultValue("20") int size) {
+        List<Question> perguntas = perguntaRepository.findAll().page(page, size).list();
         return Response.ok(perguntas).build();
     }
 
     @GET
     @Path("/perguntas")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getAllLegacy() {
-        return getAll();
+    public Response getAllLegacy(
+            @QueryParam("page") @DefaultValue("0") int page,
+            @QueryParam("size") @DefaultValue("20") int size) {
+        return getAll(page, size);
     }
 
     @GET
@@ -93,7 +99,7 @@ public class QuestionResource {
         }
         if (pergunta.getForum() != null) p.setForum(pergunta.getForum());
         if (pergunta.getPergunta() != null && !pergunta.getPergunta().isBlank()) p.setPergunta(pergunta.getPergunta());
-        return Response.status(200).build();
+        return Response.ok(p).build();
 
     }
 

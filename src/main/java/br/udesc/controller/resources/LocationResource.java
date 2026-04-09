@@ -8,12 +8,14 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -35,16 +37,20 @@ public class LocationResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getAll() {
-        List<Location> localizacoes = localizacaoRepository.listAll();
+    public Response getAll(
+            @QueryParam("page") @DefaultValue("0") int page,
+            @QueryParam("size") @DefaultValue("20") int size) {
+        List<Location> localizacoes = localizacaoRepository.findAll().page(page, size).list();
         return Response.ok(localizacoes).build();
     }
 
     @GET
     @Path("/localizacoes")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getAllLegacy() {
-        return getAll();
+    public Response getAllLegacy(
+            @QueryParam("page") @DefaultValue("0") int page,
+            @QueryParam("size") @DefaultValue("20") int size) {
+        return getAll(page, size);
     }
 
     @GET
@@ -97,7 +103,7 @@ public class LocationResource {
         if (localizacao.getLongitude() != null && !localizacao.getLongitude().isBlank()) {
             l.setLongitude(localizacao.getLongitude());
         }
-        return Response.status(200).build();
+        return Response.ok(l).build();
 
     }
 

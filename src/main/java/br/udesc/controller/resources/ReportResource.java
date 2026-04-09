@@ -10,6 +10,7 @@ import io.quarkus.security.identity.SecurityIdentity;
 
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
 import java.io.ByteArrayInputStream;
@@ -31,8 +32,11 @@ public class ReportResource {
     @Inject SecurityIdentity identity;
 
     @GET
-    public Response getAll(@Context UriInfo uriInfo) {
-        List<ReportResponse> lista = denunciaRepository.listAll().stream()
+    public Response getAll(
+            @Context UriInfo uriInfo,
+            @QueryParam("page") @DefaultValue("0") int page,
+            @QueryParam("size") @DefaultValue("20") int size) {
+        List<ReportResponse> lista = denunciaRepository.findAll().page(page, size).list().stream()
                 .map(d -> toResponse(d, uriInfo))
                 .collect(Collectors.toList());
         return Response.ok(lista).build();
@@ -40,8 +44,11 @@ public class ReportResource {
 
     @GET
     @Path("/denuncias")
-    public Response getAllLegacy(@Context UriInfo uriInfo) {
-        return getAll(uriInfo);
+    public Response getAllLegacy(
+            @Context UriInfo uriInfo,
+            @QueryParam("page") @DefaultValue("0") int page,
+            @QueryParam("size") @DefaultValue("20") int size) {
+        return getAll(uriInfo, page, size);
     }
 
     @GET
@@ -73,8 +80,7 @@ public class ReportResource {
 
     @POST
     @Transactional
-    public Response create(ReportRequest req, @Context UriInfo uriInfo) {
-        validarCamposObrigatorios(req);
+    public Response create(@Valid ReportRequest req, @Context UriInfo uriInfo) {
 
         User user = getUsuarioLogado();
 
@@ -182,17 +188,6 @@ public class ReportResource {
         String email = identity.getPrincipal().getName();
         return usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new WebApplicationException("User nao encontrado", 401));
-    }
-
-    private void validarCamposObrigatorios(ReportRequest req) {
-        if (req == null
-                || req.nomeLocal == null || req.nomeLocal.isBlank()
-                || req.problema  == null || req.problema.isBlank()
-                || req.endereco  == null
-                || req.endereco.cidade == null || req.endereco.cidade.isBlank()
-                || req.endereco.uf == null || req.endereco.uf.isBlank()) {
-            throw new WebApplicationException("Campos obrigatorios: nomeLocal, problema, endereco.cidade, endereco.uf", 400);
-        }
     }
 
     private Address fromEnderecoRequest(ReportRequest req) {

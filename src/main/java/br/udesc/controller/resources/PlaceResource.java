@@ -8,12 +8,14 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -35,23 +37,29 @@ public class PlaceResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getAll() {
-        List<Place> locais = localRepository.listAll();
+    public Response getAll(
+            @QueryParam("page") @DefaultValue("0") int page,
+            @QueryParam("size") @DefaultValue("20") int size) {
+        List<Place> locais = localRepository.findAll().page(page, size).list();
         return Response.ok(locais).build();
     }
 
     @GET
     @Path("/pessoas")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getAllLegacy() {
-        return getAll();
+    public Response getAllLegacy(
+            @QueryParam("page") @DefaultValue("0") int page,
+            @QueryParam("size") @DefaultValue("20") int size) {
+        return getAll(page, size);
     }
 
     @GET
     @Path("/locais")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getAllAlias() {
-        return getAll();
+    public Response getAllAlias(
+            @QueryParam("page") @DefaultValue("0") int page,
+            @QueryParam("size") @DefaultValue("20") int size) {
+        return getAll(page, size);
     }
 
     @GET
@@ -99,7 +107,7 @@ public class PlaceResource {
         if (local.getNome() != null && !local.getNome().isBlank()) l.setNome(local.getNome());
         if (local.getLocalizacao() != null) l.setLocalizacao(local.getLocalizacao());
         if (local.getEndereco() != null) l.setEndereco(local.getEndereco());
-        return Response.status(200).build();
+        return Response.ok(l).build();
 
     }
 
