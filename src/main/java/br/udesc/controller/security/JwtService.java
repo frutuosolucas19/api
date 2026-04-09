@@ -8,9 +8,11 @@ import jakarta.inject.Inject;
 import io.smallrye.jwt.auth.principal.JWTParser;
 import io.smallrye.jwt.build.Jwt;
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class JwtService {
+    private static final Logger LOG = Logger.getLogger(JwtService.class);
     private static final String RECUPERACAO_SENHA = "password-reset";
     private static final String ISSUER = "udesc-api";
     private static final long TOKEN_EXPIRY_SECONDS = 3600;       // 1 hora
@@ -57,7 +59,8 @@ public class JwtService {
                 return null;
             }
             return email.trim().toLowerCase();
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            LOG.warn("Falha ao validar token de recuperacao de senha: " + e.getMessage());
             return null;
         }
     }

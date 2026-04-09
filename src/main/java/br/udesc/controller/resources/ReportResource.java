@@ -43,15 +43,6 @@ public class ReportResource {
     }
 
     @GET
-    @Path("/denuncias")
-    public Response getAllLegacy(
-            @Context UriInfo uriInfo,
-            @QueryParam("page") @DefaultValue("0") int page,
-            @QueryParam("size") @DefaultValue("20") int size) {
-        return getAll(uriInfo, page, size);
-    }
-
-    @GET
     @Path("/{id}")
     public Response getById(@PathParam("id") Long id, @Context UriInfo uriInfo) {
         User user = getUsuarioLogado();
@@ -92,11 +83,6 @@ public class ReportResource {
         d.setProblema(req.problema);
         d.setSugestao(req.sugestao);
         d.setUsuario(user);
-
-        if (d.getStatus() == null) {
-            d.setStatus(Status.ENCAMINHADO);
-        }
-
         anexarImagensRequest(d, req);
 
         denunciaRepository.persist(d);
@@ -184,10 +170,15 @@ public class ReportResource {
                 .build();
     }
 
+    private static final long MAX_IMAGEM_BYTES = 5 * 1024 * 1024L; // 5 MB por imagem
+
     private User getUsuarioLogado() {
-        String email = identity.getPrincipal().getName();
-        return usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new WebApplicationException("User nao encontrado", 401));
+        var principal = identity.getPrincipal();
+        if (principal == null || principal.getName() == null || principal.getName().isBlank()) {
+            throw new WebApplicationException("Autenticacao invalida.", 401);
+        }
+        return usuarioRepository.findByEmailIgnoreCase(principal.getName())
+                .orElseThrow(() -> new WebApplicationException("Usuario nao encontrado.", 401));
     }
 
     private Address fromEnderecoRequest(ReportRequest req) {
@@ -217,6 +208,11 @@ public class ReportResource {
                 bytes = Base64.getDecoder().decode(imgReq.base64);
             } catch (IllegalArgumentException ex) {
                 throw new WebApplicationException("Imagem base64 invalida.", 400);
+            }
+
+            if (bytes.length > MAX_IMAGEM_BYTES) {
+                throw new WebApplicationException(
+                        "Imagem excede o tamanho maximo permitido de 5 MB.", 400);
             }
 
             Image di = new Image();

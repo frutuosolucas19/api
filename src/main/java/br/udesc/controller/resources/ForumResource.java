@@ -1,30 +1,20 @@
 package br.udesc.controller.resources;
 
-import java.util.List;
-
 import jakarta.annotation.security.RolesAllowed;
-
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriInfo;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
 import java.net.URI;
+import java.util.List;
 
 import br.udesc.controller.repositories.ForumRepository;
+import br.udesc.controller.repositories.UserRepository;
 import br.udesc.dto.ErrorResponse;
+import br.udesc.dto.ForumRequest;
 import br.udesc.model.Forum;
+import br.udesc.model.User;
 
 @Path("/forum")
 @Produces(MediaType.APPLICATION_JSON)
@@ -32,11 +22,10 @@ import br.udesc.model.Forum;
 @RolesAllowed("User")
 public class ForumResource {
 
-    @Inject
-    ForumRepository forumRepository;
+    @Inject ForumRepository forumRepository;
+    @Inject UserRepository usuarioRepository;
 
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getAll(
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("size") @DefaultValue("20") int size) {
@@ -45,33 +34,23 @@ public class ForumResource {
     }
 
     @GET
-    @Path("/foruns")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getAllLegacy(
-            @QueryParam("page") @DefaultValue("0") int page,
-            @QueryParam("size") @DefaultValue("20") int size) {
-        return getAll(page, size);
-    }
-
-    @GET
     @Path("/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getById(@PathParam("id") Long id) {
-        return forumRepository.findByIdOptional(id).
-                map(user -> Response.ok(user).build())
-                .orElse(Response.status(404).build());
+        return forumRepository.findByIdOptional(id)
+                .map(f -> Response.ok(f).build())
+                .orElse(Response.status(Response.Status.NOT_FOUND).build());
     }
 
     @POST
     @Transactional
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response create(Forum forum, @Context UriInfo uriInfo) {
-        if (forum == null || forum.getUsuario() == null) {
+    public Response create(@Valid ForumRequest req, @Context UriInfo uriInfo) {
+        User usuario = usuarioRepository.findById(req.usuarioId);
+        if (usuario == null) {
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(new ErrorResponse("Usuario obrigatorio para criar forum."))
+                    .entity(new ErrorResponse("Usuario nao encontrado para o usuarioId informado."))
                     .build();
         }
+        Forum forum = new Forum(usuario);
         forumRepository.persist(forum);
         if (forumRepository.isPersistent(forum)) {
             URI location = uriInfo.getAbsolutePathBuilder().path(String.valueOf(forum.id)).build();
@@ -83,23 +62,25 @@ public class ForumResource {
     @PUT
     @Path("/{id}")
     @Transactional
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response update(@PathParam("id") Long id, Forum forum) {
-        if (forum == null) {
+    public Response update(@PathParam("id") Long id, ForumRequest req) {
+        if (req == null) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(new ErrorResponse("Payload obrigatorio."))
                     .build();
         }
         Forum f = forumRepository.findById(id);
-        if (f == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-        if (forum.getUsuario() != null) {
-            f.setUsuario(forum.getUsuario());
+        if (f == null) return Response.status(Response.Status.NOT_FOUND).build();
+
+        if (req.usuarioId != null) {
+            User usuario = usuarioRepository.findById(req.usuarioId);
+            if (usuario == null) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(new ErrorResponse("Usuario nao encontrado para o usuarioId informado."))
+                        .build();
+            }
+            f.setUsuario(usuario);
         }
         return Response.ok(f).build();
-
     }
 
     @DELETE
@@ -107,10 +88,6 @@ public class ForumResource {
     @Transactional
     public Response deleteById(@PathParam("id") Long id) {
         boolean deleted = forumRepository.deleteById(id);
-        return deleted ? Response.noContent().
-                build() : Response.status(404).build();
+        return deleted ? Response.noContent().build() : Response.status(Response.Status.NOT_FOUND).build();
     }
-    
 }
-
-

@@ -1,28 +1,16 @@
 package br.udesc.controller.resources;
 
-import java.util.List;
-
 import jakarta.annotation.security.RolesAllowed;
-
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriInfo;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
 import java.net.URI;
+import java.util.List;
 
 import br.udesc.controller.repositories.AddressRepository;
+import br.udesc.dto.AddressRequest;
 import br.udesc.dto.ErrorResponse;
 import br.udesc.model.Address;
 
@@ -31,12 +19,11 @@ import br.udesc.model.Address;
 @Consumes(MediaType.APPLICATION_JSON)
 @RolesAllowed("User")
 public class AddressResource {
-    
+
     @Inject
     AddressRepository enderecoRepository;
 
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getAll(
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("size") @DefaultValue("20") int size) {
@@ -45,37 +32,17 @@ public class AddressResource {
     }
 
     @GET
-    @Path("/enderecos")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getAllLegacy(
-            @QueryParam("page") @DefaultValue("0") int page,
-            @QueryParam("size") @DefaultValue("20") int size) {
-        return getAll(page, size);
-    }
-
-    @GET
     @Path("/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getById(@PathParam("id") Long id) {
-        return enderecoRepository.findByIdOptional(id).
-                map(user -> Response.ok(user).build())
-                .orElse(Response.status(404).build());
+        return enderecoRepository.findByIdOptional(id)
+                .map(e -> Response.ok(e).build())
+                .orElse(Response.status(Response.Status.NOT_FOUND).build());
     }
 
     @POST
     @Transactional
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response create(Address endereco, @Context UriInfo uriInfo) {
-        if (endereco == null
-                || endereco.getLogradouro() == null || endereco.getLogradouro().isBlank()
-                || endereco.getCidade() == null || endereco.getCidade().isBlank()
-                || endereco.getUf() == null || endereco.getUf().isBlank()) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(new ErrorResponse("Campos obrigatorios: logradouro, cidade, uf."))
-                    .build();
-        }
-
+    public Response create(@Valid AddressRequest req, @Context UriInfo uriInfo) {
+        Address endereco = fromRequest(req);
         enderecoRepository.persist(endereco);
         if (enderecoRepository.isPersistent(endereco)) {
             URI location = uriInfo.getAbsolutePathBuilder().path(String.valueOf(endereco.id)).build();
@@ -87,27 +54,24 @@ public class AddressResource {
     @PUT
     @Path("/{id}")
     @Transactional
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response update(@PathParam("id") Long id, Address endereco) {
-        if (endereco == null) {
+    public Response update(@PathParam("id") Long id, AddressRequest req) {
+        if (req == null) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(new ErrorResponse("Payload obrigatorio."))
                     .build();
         }
         Address e = enderecoRepository.findById(id);
-        if (e == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-        if (endereco.getCep() != null) e.setCep(endereco.getCep());
-        if (endereco.getLogradouro() != null && !endereco.getLogradouro().isBlank()) e.setLogradouro(endereco.getLogradouro());
-        if (endereco.getNumero() != null) e.setNumero(endereco.getNumero());
-        if (endereco.getComplemento() != null) e.setComplemento(endereco.getComplemento());
-        if (endereco.getBairro() != null) e.setBairro(endereco.getBairro());
-        if (endereco.getCidade() != null && !endereco.getCidade().isBlank()) e.setCidade(endereco.getCidade());
-        if (endereco.getUf() != null && !endereco.getUf().isBlank()) e.setUf(endereco.getUf());
-        return Response.ok(e).build();
+        if (e == null) return Response.status(Response.Status.NOT_FOUND).build();
 
+        if (req.logradouro != null && !req.logradouro.isBlank()) e.setLogradouro(req.logradouro);
+        if (req.numero != null) e.setNumero(req.numero);
+        if (req.bairro != null) e.setBairro(req.bairro);
+        if (req.cidade != null && !req.cidade.isBlank()) e.setCidade(req.cidade);
+        if (req.uf != null && !req.uf.isBlank()) e.setUf(req.uf);
+        if (req.cep != null) e.setCep(req.cep);
+        if (req.complemento != null) e.setComplemento(req.complemento);
+
+        return Response.ok(e).build();
     }
 
     @DELETE
@@ -115,10 +79,18 @@ public class AddressResource {
     @Transactional
     public Response deleteById(@PathParam("id") Long id) {
         boolean deleted = enderecoRepository.deleteById(id);
-        return deleted ? Response.noContent().
-                build() : Response.status(404).build();
+        return deleted ? Response.noContent().build() : Response.status(Response.Status.NOT_FOUND).build();
+    }
+
+    private Address fromRequest(AddressRequest req) {
+        Address a = new Address();
+        a.setLogradouro(req.logradouro);
+        a.setNumero(req.numero);
+        a.setBairro(req.bairro);
+        a.setCidade(req.cidade);
+        a.setUf(req.uf);
+        a.setCep(req.cep);
+        a.setComplemento(req.complemento);
+        return a;
     }
 }
-
-
-

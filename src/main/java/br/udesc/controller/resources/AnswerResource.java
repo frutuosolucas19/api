@@ -1,30 +1,20 @@
 package br.udesc.controller.resources;
 
-import java.util.List;
-
 import jakarta.annotation.security.RolesAllowed;
-
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriInfo;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
 import java.net.URI;
+import java.util.List;
 
 import br.udesc.controller.repositories.AnswerRepository;
+import br.udesc.controller.repositories.QuestionRepository;
+import br.udesc.dto.AnswerRequest;
 import br.udesc.dto.ErrorResponse;
 import br.udesc.model.Answer;
+import br.udesc.model.Question;
 
 @Path("/resposta")
 @Produces(MediaType.APPLICATION_JSON)
@@ -32,11 +22,10 @@ import br.udesc.model.Answer;
 @RolesAllowed("User")
 public class AnswerResource {
 
-    @Inject
-    AnswerRepository respostaRepository;
+    @Inject AnswerRepository respostaRepository;
+    @Inject QuestionRepository perguntaRepository;
 
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getAll(
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("size") @DefaultValue("20") int size) {
@@ -45,35 +34,23 @@ public class AnswerResource {
     }
 
     @GET
-    @Path("/respostas")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getAllLegacy(
-            @QueryParam("page") @DefaultValue("0") int page,
-            @QueryParam("size") @DefaultValue("20") int size) {
-        return getAll(page, size);
-    }
-
-    @GET
     @Path("/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
     public Response getById(@PathParam("id") Long id) {
-        return respostaRepository.findByIdOptional(id).
-                map(user -> Response.ok(user).build())
-                .orElse(Response.status(404).build());
+        return respostaRepository.findByIdOptional(id)
+                .map(r -> Response.ok(r).build())
+                .orElse(Response.status(Response.Status.NOT_FOUND).build());
     }
 
     @POST
     @Transactional
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response create(Answer resposta, @Context UriInfo uriInfo) {
-        if (resposta == null
-                || resposta.getResposta() == null || resposta.getResposta().isBlank()
-                || resposta.getPergunta() == null) {
+    public Response create(@Valid AnswerRequest req, @Context UriInfo uriInfo) {
+        Question pergunta = perguntaRepository.findById(req.perguntaId);
+        if (pergunta == null) {
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(new ErrorResponse("Campos obrigatorios: resposta, pergunta."))
+                    .entity(new ErrorResponse("Pergunta nao encontrada para o perguntaId informado."))
                     .build();
         }
+        Answer resposta = new Answer(pergunta, req.resposta.trim());
         respostaRepository.persist(resposta);
         if (respostaRepository.isPersistent(resposta)) {
             URI location = uriInfo.getAbsolutePathBuilder().path(String.valueOf(resposta.id)).build();
@@ -85,22 +62,27 @@ public class AnswerResource {
     @PUT
     @Path("/{id}")
     @Transactional
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response update(@PathParam("id") Long id, Answer resposta) {
-        if (resposta == null) {
+    public Response update(@PathParam("id") Long id, AnswerRequest req) {
+        if (req == null) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(new ErrorResponse("Payload obrigatorio."))
                     .build();
         }
         Answer r = respostaRepository.findById(id);
-        if (r == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-        if (resposta.getPergunta() != null) r.setPergunta(resposta.getPergunta());
-        if (resposta.getResposta() != null && !resposta.getResposta().isBlank()) r.setResposta(resposta.getResposta());
-        return Response.ok(r).build();
+        if (r == null) return Response.status(Response.Status.NOT_FOUND).build();
 
+        if (req.perguntaId != null) {
+            Question pergunta = perguntaRepository.findById(req.perguntaId);
+            if (pergunta == null) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(new ErrorResponse("Pergunta nao encontrada para o perguntaId informado."))
+                        .build();
+            }
+            r.setPergunta(pergunta);
+        }
+        if (req.resposta != null && !req.resposta.isBlank()) r.setResposta(req.resposta.trim());
+
+        return Response.ok(r).build();
     }
 
     @DELETE
@@ -108,11 +90,6 @@ public class AnswerResource {
     @Transactional
     public Response deleteById(@PathParam("id") Long id) {
         boolean deleted = respostaRepository.deleteById(id);
-        return deleted ? Response.noContent().
-                build() : Response.status(404).build();
+        return deleted ? Response.noContent().build() : Response.status(Response.Status.NOT_FOUND).build();
     }
-    
 }
-
-
-
